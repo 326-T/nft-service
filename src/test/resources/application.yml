@@ -2,6 +2,10 @@ server:
   port: 8080
 
 spring:
+  test:
+    context:
+      failure:
+        threshold: 1000000
   data:
     mongodb:
       host: localhost

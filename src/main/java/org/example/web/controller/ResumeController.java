@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/resume")
+@RequestMapping("/api/v1/resumes")
 public class ResumeController {
 
   private final ResumeService resumeService;

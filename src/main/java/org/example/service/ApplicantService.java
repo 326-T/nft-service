@@ -1,8 +1,9 @@
 package org.example.service;
 
-import org.example.error.UnauthenticatedException;
+import org.example.error.exception.PasswordAuthenticationException;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.repository.ApplicantRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -14,13 +15,14 @@ public class ApplicantService {
   private final ApplicantRepository applicantRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public ApplicantService(ApplicantRepository applicantRepository, PasswordEncoder passwordEncoder) {
+  public ApplicantService(ApplicantRepository applicantRepository,
+      PasswordEncoder passwordEncoder) {
     this.applicantRepository = applicantRepository;
     this.passwordEncoder = passwordEncoder;
   }
 
   public Flux<Applicant> findAll() {
-    return applicantRepository.findAll();
+    return applicantRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt"));
   }
 
   public Mono<Applicant> findById(String id) {
@@ -39,7 +41,8 @@ public class ApplicantService {
   public Mono<Applicant> login(String email, String password) {
     return applicantRepository.findByEmail(email)
         .filter(present -> passwordEncoder.matches(password, present.getPasswordDigest()))
-        .switchIfEmpty(Mono.error(new UnauthenticatedException("Invalid email or password.")));
+        .switchIfEmpty(
+            Mono.error(new PasswordAuthenticationException("Invalid email or password.")));
   }
 
   public Mono<Void> deleteById(String id) {

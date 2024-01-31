@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.example.config.MongoAuditingConfiguration;
 import org.example.persistence.entity.Applicant;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,6 +39,11 @@ class ApplicantRepositoryTest {
             .phone("090-1111-2222").address("東京都千代田区").passwordDigest("").build()).block();
   }
 
+  @AfterEach
+  void tearDown() {
+    applicantRepository.deleteAll().block();
+  }
+
   @Nested
   class findAll {
 
@@ -48,14 +55,15 @@ class ApplicantRepositoryTest {
       @DisplayName("全件取得できること")
       void findAll() {
         // when
-        Flux<Applicant> actual = applicantRepository.findAll();
+        Flux<Applicant> actual = applicantRepository.findAll(
+            Sort.by(Sort.Direction.DESC, "updatedAt"));
         // then
         StepVerifier.create(actual)
             .assertNext(applicant -> assertThat(applicant)
                 .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
-                    ""))
+                .containsExactly("三郎", "佐藤", "zzz@example.org", "090-1111-2222",
+                    "東京都千代田区", ""))
             .assertNext(applicant -> assertThat(applicant)
                 .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
@@ -64,8 +72,8 @@ class ApplicantRepositoryTest {
             .assertNext(applicant -> assertThat(applicant)
                 .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("三郎", "佐藤", "zzz@example.org", "090-1111-2222",
-                    "東京都千代田区", ""));
+                .containsExactly("太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
+                    ""));
       }
     }
   }

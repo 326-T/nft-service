@@ -4,22 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import org.example.error.UnauthenticatedException;
+import org.example.error.exception.PasswordAuthenticationException;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.repository.ApplicantRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
 class ApplicantServiceTest {
 
   @InjectMocks
@@ -215,7 +216,7 @@ class ApplicantServiceTest {
         // when
         Mono<Applicant> actual = applicantService.login("xxx@example.org", "password");
         // then
-        StepVerifier.create(actual).expectError(UnauthenticatedException.class).verify();
+        StepVerifier.create(actual).expectError(PasswordAuthenticationException.class).verify();
       }
 
       @Test
@@ -230,7 +231,7 @@ class ApplicantServiceTest {
         // when
         Mono<Applicant> actual = applicantService.login("xxx@example.org", "password");
         // then
-        StepVerifier.create(actual).expectError(UnauthenticatedException.class).verify();
+        StepVerifier.create(actual).expectError(PasswordAuthenticationException.class).verify();
       }
     }
   }

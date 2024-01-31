@@ -5,14 +5,14 @@ import java.util.Arrays;
 import java.util.Objects;
 import lombok.NonNull;
 import org.example.config.AuthConfig;
-import org.example.constants.ContextKeys;
-import org.example.error.UnauthenticatedException;
+import org.example.constant.ContextKeys;
+import org.example.error.exception.UnauthenticatedException;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -59,11 +59,11 @@ public class AuthenticationWebFilter implements WebFilter {
                 Objects.equals(p.getPath(), exchange.getRequest().getPath().toString()))) {
       return chain.filter(exchange);
     }
-    String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-    if (StringUtil.isNullOrEmpty(token)) {
+    HttpCookie cookie = exchange.getRequest().getCookies().getFirst("token");
+    if (Objects.isNull(cookie) || StringUtil.isNullOrEmpty(cookie.getValue())) {
       return Mono.error(new UnauthenticatedException("Authorization headerがありません。"));
     }
-    return Mono.just(token)
+    return Mono.just(cookie.getValue())
         .map(this::jwtChain)
         .doOnNext(u -> exchange.getAttributes().put(ContextKeys.APPLICANT_KEY, u))
         .then(chain.filter(exchange));

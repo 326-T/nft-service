@@ -62,7 +62,7 @@ class ApplicantControllerTest {
             .thenReturn(Flux.just(applicant3, applicant2, applicant1));
         // when, then
         webTestClient.get()
-            .uri("/api/v1/applicant")
+            .uri("/api/v1/applicants")
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(Applicant.class)
@@ -103,7 +103,7 @@ class ApplicantControllerTest {
         when(applicantService.findById("1")).thenReturn(Mono.just(applicant1));
         // when, then
         webTestClient.get()
-            .uri("/api/v1/applicant/1")
+            .uri("/api/v1/applicants/1")
             .exchange()
             .expectStatus().isOk()
             .expectBody(Applicant.class)
@@ -139,7 +139,7 @@ class ApplicantControllerTest {
             .thenReturn(Mono.just(applicant1));
         // when, then
         webTestClient.post()
-            .uri("/api/v1/applicant")
+            .uri("/api/v1/applicants")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
@@ -185,7 +185,7 @@ class ApplicantControllerTest {
         when(jwtService.encode(applicant1)).thenReturn("jwt");
         // when, then
         webTestClient.post()
-            .uri("/api/v1/applicant/login")
+            .uri("/api/v1/applicants/login")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
@@ -214,7 +214,7 @@ class ApplicantControllerTest {
         when(applicantService.deleteById("1")).thenReturn(Mono.empty());
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/applicant/1")
+            .uri("/api/v1/applicants/1")
             .exchange()
             .expectStatus().isOk()
             .expectBody().isEmpty();

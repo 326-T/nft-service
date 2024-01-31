@@ -61,7 +61,7 @@ class ResumeControllerTest {
             .thenReturn(Flux.just(resume3, resume2, resume1));
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resume")
+            .uri("/api/v1/resumes")
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(Resume.class)
@@ -102,7 +102,7 @@ class ResumeControllerTest {
         when(resumeService.findById("1")).thenReturn(Mono.just(resume1));
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resume/1")
+            .uri("/api/v1/resumes/1")
             .exchange()
             .expectStatus().isOk()
             .expectBody(Resume.class)
@@ -135,7 +135,7 @@ class ResumeControllerTest {
         when(resumeService.findByApplicantId("1")).thenReturn(Flux.just(resume1));
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resume/applicant/1")
+            .uri("/api/v1/resumes/applicant/1")
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(Resume.class)
@@ -171,7 +171,7 @@ class ResumeControllerTest {
             .thenReturn(Mono.just(resume1));
         // when, then
         webTestClient.post()
-            .uri("/api/v1/resume")
+            .uri("/api/v1/resumes")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
@@ -214,7 +214,7 @@ class ResumeControllerTest {
         when(resumeService.deleteById("1")).thenReturn(Mono.empty());
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/resume/1")
+            .uri("/api/v1/resumes/1")
             .exchange()
             .expectStatus().isOk()
             .expectBody().isEmpty();

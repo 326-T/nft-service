@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.example.config.MongoAuditingConfiguration;
 import org.example.persistence.entity.Resume;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,6 +40,11 @@ class ResumeRepositoryTest {
         Resume.builder().applicantId("3").education("2019年 C大学卒業").experience("カフェバイト")
             .skills("英検2級").interests("大手企業")
             .references("https://imageC.png").build()).block();
+  }
+
+  @AfterEach
+  void tearDown() {
+    resumeRepository.deleteAll().block();
   }
 
   @Nested

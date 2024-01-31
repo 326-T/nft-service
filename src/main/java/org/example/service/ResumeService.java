@@ -1,8 +1,10 @@
 package org.example.service;
 
+import lombok.NonNull;
 import org.example.persistence.entity.Resume;
 import org.example.persistence.repository.ResumeRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,8 +18,10 @@ public class ResumeService {
     this.resumeRepository = resumeRepository;
   }
 
+  @Query("{}")
+  @NonNull
   public Flux<Resume> findAll() {
-    return resumeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    return resumeRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt"));
   }
 
   public Mono<Resume> findById(String id) {
