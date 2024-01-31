@@ -20,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -40,7 +38,7 @@ class JwtServiceTest {
   }
 
   @Nested
-  class encode {
+  class encodeApplicant {
 
     @Nested
     @DisplayName("正常系")
@@ -54,7 +52,7 @@ class JwtServiceTest {
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
         // when
-        String jwt = jwtService.encode(user);
+        String jwt = jwtService.encodeApplicant(user);
         // then
         DecodedJWT jwtDecoded = JWT.require(Algorithm.HMAC256("secret")).build().verify(jwt);
         assertThat(jwtDecoded.getIssuer()).isEqualTo("org.example");
@@ -70,7 +68,7 @@ class JwtServiceTest {
   }
 
   @Nested
-  class decode {
+  class decodeApplicant {
 
     @Nested
     @DisplayName("正常系")
@@ -96,7 +94,7 @@ class JwtServiceTest {
             .withExpiresAt(new Date(now.getTime() + 1000L))
             .sign(Algorithm.HMAC256("secret"));
         // when
-        Applicant applicant = jwtService.decode(jwt);
+        Applicant applicant = jwtService.decodeApplicant(jwt);
         // then
         assertThat(applicant)
             .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
@@ -119,14 +117,17 @@ class JwtServiceTest {
             .withIssuer("org.example")
             .withAudience("org.example")
             .withSubject("1")
-            .withClaim("name", "privilege")
-            .withClaim("email", "privilege@example.org")
+            .withClaim("firstName", "太郎")
+            .withClaim("lastName", "山田")
+            .withClaim("email", "xxx@example.org")
+            .withClaim("phone", "090-1234-5678")
+            .withClaim("address", "東京都渋谷区")
             .withIssuedAt(now)
             .withNotBefore(now)
             .withExpiresAt(new Date(now.getTime() + 1000L))
             .sign(Algorithm.HMAC256("invalid_secret"));
         // when, then
-        assertThrows(SignatureVerificationException.class, () -> jwtService.decode(jwt));
+        assertThrows(SignatureVerificationException.class, () -> jwtService.decodeApplicant(jwt));
       }
 
       @Test
@@ -139,20 +140,23 @@ class JwtServiceTest {
             .withIssuer("org.example")
             .withAudience("org.example")
             .withSubject("1")
-            .withClaim("name", "privilege")
-            .withClaim("email", "privilege@example.org")
+            .withClaim("firstName", "太郎")
+            .withClaim("lastName", "山田")
+            .withClaim("email", "xxx@example.org")
+            .withClaim("phone", "090-1234-5678")
+            .withClaim("address", "東京都渋谷区")
             .withIssuedAt(now)
             .withNotBefore(now)
             .withExpiresAt(new Date(now.getTime() - 1000L))
             .sign(Algorithm.HMAC256("secret"));
         // when, then
-        assertThrows(TokenExpiredException.class, () -> jwtService.decode(jwt));
+        assertThrows(TokenExpiredException.class, () -> jwtService.decodeApplicant(jwt));
       }
 
       @Test
       void notJwtCase() {
         // when, then
-        assertThrows(JWTDecodeException.class, () -> jwtService.decode("not_jwt"));
+        assertThrows(JWTDecodeException.class, () -> jwtService.decodeApplicant("not_jwt"));
       }
     }
   }

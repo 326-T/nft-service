@@ -79,7 +79,7 @@ public class AuthenticationWebFilter implements WebFilter {
   private Mono<Applicant> jwtChain(String token) {
     return Mono.just(token)
         .map(base64Service::decode)
-        .map(jwtService::decode)
+        .map(jwtService::decodeApplicant)
         .flatMap(a -> applicantService.findByEmail(a.getEmail()))
         .switchIfEmpty(Mono.error(new UnauthenticatedException("存在しないユーザです。")));
   }

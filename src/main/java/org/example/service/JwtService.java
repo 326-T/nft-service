@@ -8,6 +8,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Date;
 import java.util.UUID;
 import org.example.persistence.entity.Applicant;
+import org.example.persistence.entity.Company;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ public class JwtService {
     this.ttl = ttl;
   }
 
-  public String encode(Applicant applicant) {
+  public String encodeApplicant(Applicant applicant) {
     Date now = new Date();
     return JWT.create()
         .withJWTId(UUID.randomUUID().toString())
@@ -42,13 +43,42 @@ public class JwtService {
         .sign(Algorithm.HMAC256(secretKey));
   }
 
-  public Applicant decode(String jwt)
+  public String encodeCompany(Company company) {
+    Date now = new Date();
+    return JWT.create()
+        .withJWTId(UUID.randomUUID().toString())
+        .withIssuer("org.example")
+        .withAudience("org.example")
+        .withSubject(company.getId())
+        .withClaim("name", company.getName())
+        .withClaim("email", company.getEmail())
+        .withClaim("phone", company.getPhone())
+        .withClaim("address", company.getAddress())
+        .withIssuedAt(now)
+        .withNotBefore(now)
+        .withExpiresAt(new Date(now.getTime() + ttl))
+        .sign(Algorithm.HMAC256(secretKey));
+  }
+
+  public Applicant decodeApplicant(String jwt)
       throws TokenExpiredException, SignatureVerificationException, IllegalArgumentException {
     DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey)).build().verify(jwt);
     return Applicant.builder()
         .id(decodedJWT.getSubject())
         .firstName(decodedJWT.getClaim("firstName").asString())
         .lastName(decodedJWT.getClaim("lastName").asString())
+        .email(decodedJWT.getClaim("email").asString())
+        .phone(decodedJWT.getClaim("phone").asString())
+        .address(decodedJWT.getClaim("address").asString())
+        .build();
+  }
+
+  public Company decodeCompany(String jwt)
+      throws TokenExpiredException, SignatureVerificationException, IllegalArgumentException {
+    DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey)).build().verify(jwt);
+    return Company.builder()
+        .id(decodedJWT.getSubject())
+        .name(decodedJWT.getClaim("name").asString())
         .email(decodedJWT.getClaim("email").asString())
         .phone(decodedJWT.getClaim("phone").asString())
         .address(decodedJWT.getClaim("address").asString())

@@ -55,7 +55,7 @@ public class ResumeAPITest {
             .skills("英検2級").interests("大手企業")
             .references("https://imageC.png").build()).block();
     id = resumeRepository.findByApplicantId("1").blockFirst().getId();
-    jwt = jwtService.encode(Applicant.builder().id("1").build());
+    jwt = jwtService.encodeApplicant(Applicant.builder().id("1").build());
   }
 
   @AfterEach

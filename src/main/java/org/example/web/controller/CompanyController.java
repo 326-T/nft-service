@@ -1,10 +1,10 @@
 package org.example.web.controller;
 
-import org.example.persistence.entity.Applicant;
-import org.example.service.ApplicantService;
+import org.example.persistence.entity.Company;
+import org.example.service.CompanyService;
 import org.example.service.JwtService;
-import org.example.web.request.ApplicantLoginRequest;
-import org.example.web.request.ApplicantRequest;
+import org.example.web.request.CompanyLoginRequest;
+import org.example.web.request.CompanyRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,42 +18,42 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/applicants")
-public class ApplicantController {
+@RequestMapping("/api/v1/companies")
+public class CompanyController {
 
-  private final ApplicantService applicantService;
+  private final CompanyService companyService;
   private final JwtService jwtService;
 
-  public ApplicantController(ApplicantService applicantService, JwtService jwtService) {
-    this.applicantService = applicantService;
+  public CompanyController(CompanyService companyService, JwtService jwtService) {
+    this.companyService = companyService;
     this.jwtService = jwtService;
   }
 
   @GetMapping
-  public Flux<Applicant> index() {
-    return applicantService.findAll();
+  public Flux<Company> index() {
+    return companyService.findAll();
   }
 
   @GetMapping("/{id}")
-  public Mono<Applicant> findById(@PathVariable String id) {
-    return applicantService.findById(id);
+  public Mono<Company> findById(@PathVariable String id) {
+    return companyService.findById(id);
   }
 
   @PostMapping
-  public Mono<Applicant> save(ServerWebExchange exchange, @RequestBody ApplicantRequest request) {
-    return applicantService.save(request.exportEntity(), request.getPassword())
-        .doOnNext(applicant -> exchange.getResponse().addCookie(
+  public Mono<Company> save(ServerWebExchange exchange, @RequestBody CompanyRequest request) {
+    return companyService.save(request.exportEntity(), request.getPassword())
+        .doOnNext(company -> exchange.getResponse().addCookie(
             ResponseCookie
-                .from("token", jwtService.encodeApplicant(applicant))
+                .from("token", jwtService.encodeCompany(company))
                 .path("/")
                 .httpOnly(true)
                 .build()));
   }
 
   @PostMapping("/login")
-  public Mono<Void> login(ServerWebExchange exchange, @RequestBody ApplicantLoginRequest request) {
-    return applicantService.login(request.getEmail(), request.getPassword())
-        .map(jwtService::encodeApplicant)
+  public Mono<Void> login(ServerWebExchange exchange, @RequestBody CompanyLoginRequest request) {
+    return companyService.login(request.getEmail(), request.getPassword())
+        .map(jwtService::encodeCompany)
         .doOnNext(jwt -> exchange.getResponse()
             .addCookie(ResponseCookie.from("token", jwt).path("/").httpOnly(true).build()))
         .then();
@@ -61,6 +61,6 @@ public class ApplicantController {
 
   @DeleteMapping("/{id}")
   public Mono<Void> deleteById(@PathVariable String id) {
-    return applicantService.deleteById(id);
+    return companyService.deleteById(id);
   }
 }
