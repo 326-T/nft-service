@@ -147,7 +147,7 @@ class CompanyRepositoryTest {
         // given
         UUID id = companyRepository.findByEmail("xxx@example.org").block().getUuid();
         // when
-        Mono<Void> actual = companyRepository.deleteById(id);
+        Mono<Void> actual = companyRepository.deleteByUuid(id);
         // then
         StepVerifier.create(actual).verifyComplete();
       }

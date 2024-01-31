@@ -18,11 +18,11 @@ public interface ResumeRepository extends ReactiveCrudRepository<Resume, String>
   @NonNull
   Mono<Resume> findByUuid(@NonNull UUID id);
 
-  Flux<Resume> findByApplicantId(UUID applicantId);
+  Flux<Resume> findByApplicantUuid(UUID applicantUuid);
 
   @NonNull
   Mono<Resume> save(@NonNull Resume resume);
 
   @NonNull
-  Mono<Void> deleteById(@NonNull UUID id);
+  Mono<Void> deleteByUuid(@NonNull UUID id);
 }

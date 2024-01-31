@@ -40,19 +40,19 @@ class ResumeServiceTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
         Resume resume2 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2020年 B大学卒業")
             .experience("コンビニバイト").skills("TOEIC 900点").interests("ベンチャー企業")
             .urls("https://imageB.png").build();
         Resume resume3 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abe"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abe"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abe"))
             .education("2019年 C大学卒業")
             .experience("カフェバイト").skills("英検2級").interests("大手企業")
             .urls("https://imageC.png").build();
@@ -63,7 +63,7 @@ class ResumeServiceTest {
         // then
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
                     Resume::getUrls)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"),
@@ -71,7 +71,7 @@ class ResumeServiceTest {
                     "カフェバイト", "英検2級",
                     "大手企業", "https://imageC.png"))
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
                     Resume::getUrls)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abd"),
@@ -79,7 +79,7 @@ class ResumeServiceTest {
                     "コンビニバイト", "TOEIC 900点",
                     "ベンチャー企業", "https://imageB.png"))
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
                     Resume::getUrls)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
@@ -104,7 +104,7 @@ class ResumeServiceTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
@@ -117,7 +117,7 @@ class ResumeServiceTest {
         // then
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
                     Resume::getUrls)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
@@ -142,11 +142,11 @@ class ResumeServiceTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
-        when(resumeRepository.findByApplicantId(
+        when(resumeRepository.findByApplicantUuid(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
             Flux.just(resume1));
         // when
@@ -155,7 +155,7 @@ class ResumeServiceTest {
         // then
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
                     Resume::getUrls)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
@@ -179,7 +179,7 @@ class ResumeServiceTest {
       void canSave() {
         // given
         Resume resume = Resume.builder()
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abf"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abf"))
             .education("2018年 D大学卒業")
             .experience("飲食店バイト").skills("英検3級").interests("中小企業")
             .urls("https://imageD.png").build();
@@ -189,7 +189,7 @@ class ResumeServiceTest {
         // then
         StepVerifier.create(actual)
             .assertNext(resume1 -> assertThat(resume1)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
+                .extracting(Resume::getApplicantUuid, Resume::getEducation, Resume::getExperience,
                     Resume::getSkills, Resume::getInterests, Resume::getUrls)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abf"),
                     "2018年 D大学卒業", "飲食店バイト", "英検3級",
@@ -210,7 +210,7 @@ class ResumeServiceTest {
       @DisplayName("IDで削除できる")
       void canDeleteById() {
         // given
-        when(resumeRepository.deleteById(
+        when(resumeRepository.deleteByUuid(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(Mono.empty());
         // when
         Mono<Void> actual = resumeService.deleteById(

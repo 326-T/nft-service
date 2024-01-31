@@ -22,7 +22,11 @@ jwt:
   ttl: 86400000
 auth:
   nonAuthPaths:
-    - path: /api/v1/auth/login
+    - path: /api/v1/applicants/login
       method: POST
-    - path: /api/v1/auth
+    - path: /api/v1/applicants
+      method: POST
+    - path: /api/v1/companies/login
+      method: POST
+    - path: /api/v1/companies
       method: POST

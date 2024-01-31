@@ -10,5 +10,6 @@ CREATE TABLE companies
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT companies_email_unique UNIQUE (email)
+    CONSTRAINT companies_email_unique UNIQUE (email),
+    CONSTRAINT companies_uuid_unique UNIQUE (uuid)
 );

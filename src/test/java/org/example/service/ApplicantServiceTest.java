@@ -248,7 +248,7 @@ class ApplicantServiceTest {
       @DisplayName("IDで削除できる")
       void canDeleteById() {
         // given
-        when(applicantRepository.deleteById(UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(Mono.empty());
+        when(applicantRepository.deleteByUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(Mono.empty());
         // when
         Mono<Void> actual = applicantService.deleteById(UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then

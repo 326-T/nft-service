@@ -11,5 +11,6 @@ CREATE TABLE applicants
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT applicants_email_unique UNIQUE (email)
+    CONSTRAINT applicants_email_unique UNIQUE (email),
+    CONSTRAINT applicants_uuid_unique UNIQUE (uuid)
 );

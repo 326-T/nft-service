@@ -9,7 +9,7 @@ import org.example.persistence.entity.Resume;
 @NoArgsConstructor
 public class ResumeInsertRequest {
 
-  private UUID applicantId;
+  private UUID applicantUuid;
   private String education;
   private String experience;
   private String skills;
@@ -19,7 +19,7 @@ public class ResumeInsertRequest {
   public Resume exportEntity() {
     return Resume.builder()
         .uuid(UUID.randomUUID())
-        .applicantId(applicantId)
+        .applicantUuid(applicantUuid)
         .education(education)
         .experience(experience)
         .skills(skills)

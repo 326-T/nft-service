@@ -24,5 +24,5 @@ public interface CompanyRepository extends ReactiveCrudRepository<Company, Strin
   Mono<Company> save(@NonNull Company applicant);
 
   @NonNull
-  Mono<Void> deleteById(@NonNull UUID id);
+  Mono<Void> deleteByUuid(@NonNull UUID id);
 }

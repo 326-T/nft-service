@@ -55,7 +55,7 @@ public class AuthenticationWebFilter implements WebFilter {
     }
     if (Arrays.stream(authConfig.getNonAuthPaths())
         .anyMatch(
-            p -> Objects.equals(p.getMethod(), exchange.getRequest().getMethod().toString()) ||
+            p -> Objects.equals(p.getMethod(), exchange.getRequest().getMethod().toString()) &&
                 Objects.equals(p.getPath(), exchange.getRequest().getPath().toString()))) {
       return chain.filter(exchange);
     }

@@ -1,6 +1,8 @@
 package org.example.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
+import org.example.error.exception.NotFoundException;
 import org.example.error.exception.PasswordAuthenticationException;
 import org.example.persistence.entity.Company;
 import org.example.persistence.repository.CompanyRepository;
@@ -39,6 +41,24 @@ public class CompanyService {
     return companyRepository.save(company);
   }
 
+  public Mono<Company> update(Company company) {
+    return companyRepository.findByUuid(company.getUuid())
+        .switchIfEmpty(Mono.error(new NotFoundException("Company not found.")))
+        .map(old -> Company.builder()
+            .id(old.getId())
+            .uuid(old.getUuid())
+            .name(company.getName())
+            .email(company.getEmail())
+            .phone(company.getPhone())
+            .address(company.getAddress())
+            .createdAt(old.getCreatedAt())
+            .updatedAt(LocalDateTime.now())
+            .version(old.getVersion() + 1)
+            .passwordDigest(old.getPasswordDigest())
+            .build())
+        .flatMap(companyRepository::save);
+  }
+
   public Mono<Company> login(String email, String password) {
     return companyRepository.findByEmail(email)
         .filter(present -> passwordEncoder.matches(password, present.getPasswordDigest()))
@@ -47,6 +67,6 @@ public class CompanyService {
   }
 
   public Mono<Void> deleteById(UUID id) {
-    return companyRepository.deleteById(id);
+    return companyRepository.deleteByUuid(id);
   }
 }

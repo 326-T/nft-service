@@ -2,7 +2,7 @@ CREATE TABLE resumes
 (
     id SERIAL PRIMARY KEY,
     uuid UUID NOT NULL,
-    applicant_id UUID NOT NULL,
+    applicant_uuid UUID NOT NULL,
     education TEXT NOT NULL,
     experience TEXT NOT NULL,
     skills TEXT NOT NULL,
@@ -11,5 +11,6 @@ CREATE TABLE resumes
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     version INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT resumes_applicant_id_fk FOREIGN KEY (applicant_id) REFERENCES applicants (id) ON DELETE CASCADE
+    CONSTRAINT resumes_uuid_unique UNIQUE (uuid),
+    CONSTRAINT resumes_applicant_uuid_foreign FOREIGN KEY (applicant_uuid) REFERENCES applicants (uuid) ON DELETE CASCADE
 );

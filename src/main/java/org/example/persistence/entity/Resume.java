@@ -20,7 +20,7 @@ public class Resume {
   @Id
   private Long id;
   private UUID uuid;
-  private UUID applicantId;
+  private UUID applicantUuid;
   private String education;
   private String experience;
   private String skills;

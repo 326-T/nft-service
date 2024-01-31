@@ -24,5 +24,5 @@ public interface ApplicantRepository extends ReactiveCrudRepository<Applicant, S
   Mono<Applicant> save(@NonNull Applicant applicant);
 
   @NonNull
-  Mono<Void> deleteById(@NonNull UUID id);
+  Mono<Void> deleteByUuid(@NonNull UUID id);
 }

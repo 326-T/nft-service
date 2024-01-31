@@ -9,6 +9,7 @@ import org.example.web.request.ApplicantInsertRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,6 +50,13 @@ public class ApplicantController {
                 .path("/")
                 .httpOnly(true)
                 .build()));
+  }
+
+  @PatchMapping("/{id}")
+  public Mono<Applicant> update(@PathVariable UUID id, @RequestBody ApplicantInsertRequest request) {
+    Applicant applicant = request.exportEntity();
+    applicant.setUuid(id);
+    return applicantService.update(request.exportEntity());
   }
 
   @PostMapping("/login")

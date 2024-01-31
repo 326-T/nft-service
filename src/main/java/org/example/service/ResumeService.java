@@ -1,6 +1,8 @@
 package org.example.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
+import org.example.error.exception.NotFoundException;
 import org.example.persistence.entity.Resume;
 import org.example.persistence.repository.ResumeRepository;
 import org.springframework.data.domain.Sort;
@@ -26,14 +28,33 @@ public class ResumeService {
   }
 
   public Flux<Resume> findByApplicantId(UUID resumeId) {
-    return resumeRepository.findByApplicantId(resumeId);
+    return resumeRepository.findByApplicantUuid(resumeId);
   }
 
   public Mono<Resume> insert(Resume resume) {
     return resumeRepository.save(resume);
   }
 
+  public Mono<Resume> update(Resume resume) {
+    return resumeRepository.findByUuid(resume.getUuid())
+        .switchIfEmpty(Mono.error(new NotFoundException("Resume not found.")))
+        .map(old -> Resume.builder()
+            .id(old.getId())
+            .uuid(old.getUuid())
+            .applicantUuid(old.getApplicantUuid())
+            .education(resume.getEducation())
+            .experience(resume.getExperience())
+            .skills(resume.getSkills())
+            .interests(resume.getInterests())
+            .urls(resume.getUrls())
+            .createdAt(old.getCreatedAt())
+            .updatedAt(LocalDateTime.now())
+            .version(old.getVersion())
+            .build())
+        .flatMap(resumeRepository::save);
+  }
+
   public Mono<Void> deleteById(UUID id) {
-    return resumeRepository.deleteById(id);
+    return resumeRepository.deleteByUuid(id);
   }
 }

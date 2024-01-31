@@ -64,7 +64,7 @@ public class ResumeAPITest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(
@@ -132,7 +132,7 @@ public class ResumeAPITest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
@@ -190,7 +190,7 @@ public class ResumeAPITest {
             .expectBodyList(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(tuple(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
@@ -248,7 +248,7 @@ public class ResumeAPITest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
-                  "applicantId": UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                  "applicantUuid": "12345678-1234-1234-1234-123456789abc",
                   "education": "2021年 A大学卒業",
                   "experience": "居酒屋バイトリーダー",
                   "skills": "英検1級",
@@ -262,12 +262,50 @@ public class ResumeAPITest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
                         "外資企業", "https://imageA.png")
+            );
+      }
+    }
+
+    @Nested
+    @DisplayName("異常系")
+    class Error {
+
+      @Test
+      @DisplayName("認証エラー")
+      void authenticationError() {
+        // when, then
+        webTestClient.post()
+            .uri("/api/v1/resumes")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("""
+                {
+                  "applicantUuid": "12345678-1234-1234-1234-123456789abc",
+                  "education": "2021年 A大学卒業",
+                  "experience": "居酒屋バイトリーダー",
+                  "skills": "英検1級",
+                  "interests": "外資企業",
+                  "urls": "https://imageA.png"
+                }
+                """
+            )
+            .exchange()
+            .expectStatus().isUnauthorized()
+            .expectBody(ErrorResponse.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
+                        ErrorResponse::getSummary, ErrorResponse::getDetail,
+                        ErrorResponse::getMessage)
+                    .containsExactly(401, null,
+                        "クライアント側の認証切れ",
+                        "org.example.error.exception.UnauthenticatedException: Authorization headerがありません。",
+                        "JWTが有効ではありません。")
             );
       }
     }

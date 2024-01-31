@@ -45,6 +45,13 @@ public class ResumeController {
     return resumeService.insert(request.exportEntity());
   }
 
+  @PatchMapping("/{id}")
+  public Mono<Resume> update(@PathVariable UUID id, @RequestBody ResumeInsertRequest request) {
+    Resume resume = request.exportEntity();
+    resume.setUuid(id);
+    return resumeService.update(request.exportEntity());
+  }
+
   @DeleteMapping("/{id}")
   public Mono<Void> deleteById(@PathVariable UUID id) {
     return resumeService.deleteById(id);

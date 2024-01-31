@@ -157,7 +157,7 @@ class ApplicantRepositoryTest {
       @DisplayName("IDで削除できること")
       void deleteById() {
         // when
-        Mono<Void> actual = applicantRepository.deleteById(
+        Mono<Void> actual = applicantRepository.deleteByUuid(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual).verifyComplete();

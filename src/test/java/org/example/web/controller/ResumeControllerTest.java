@@ -51,19 +51,19 @@ class ResumeControllerTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
         Resume resume2 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2020年 B大学卒業")
             .experience("コンビニバイト").skills("TOEIC 900点").interests("ベンチャー企業")
             .urls("https://imageB.png").build();
         Resume resume3 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2019年 C大学卒業")
             .experience("カフェバイト").skills("英検2級").interests("大手企業")
             .urls("https://imageC.png").build();
@@ -78,7 +78,7 @@ class ResumeControllerTest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(
@@ -114,7 +114,7 @@ class ResumeControllerTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
@@ -129,7 +129,7 @@ class ResumeControllerTest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
@@ -154,7 +154,7 @@ class ResumeControllerTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
@@ -169,7 +169,7 @@ class ResumeControllerTest {
             .expectBodyList(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(
@@ -196,7 +196,7 @@ class ResumeControllerTest {
         // given
         Resume resume1 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
-            .applicantId(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
             .urls("https://imageA.png").build();
@@ -222,7 +222,7 @@ class ResumeControllerTest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(

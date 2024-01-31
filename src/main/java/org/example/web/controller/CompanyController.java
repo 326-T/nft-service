@@ -9,6 +9,7 @@ import org.example.web.request.CompanyInsertRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,6 +50,13 @@ public class CompanyController {
                 .path("/")
                 .httpOnly(true)
                 .build()));
+  }
+
+  @PatchMapping("/{id}")
+  public Mono<Company> update(@PathVariable UUID id, @RequestBody CompanyInsertRequest request) {
+    Company company = request.exportEntity();
+    company.setUuid(id);
+    return companyService.update(request.exportEntity());
   }
 
   @PostMapping("/login")
