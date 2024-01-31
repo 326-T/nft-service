@@ -40,8 +40,14 @@ public class ApplicantController {
   }
 
   @PostMapping
-  public Mono<Applicant> save(@RequestBody ApplicantRequest request) {
-    return applicantService.save(request.exportEntity(), request.getPassword());
+  public Mono<Applicant> save(ServerWebExchange exchange, @RequestBody ApplicantRequest request) {
+    return applicantService.save(request.exportEntity(), request.getPassword())
+        .doOnNext(applicant -> exchange.getResponse().addCookie(
+            ResponseCookie
+                .from("token", jwtService.encode(applicant))
+                .path("/")
+                .httpOnly(true)
+                .build()));
   }
 
   @PostMapping("/login")

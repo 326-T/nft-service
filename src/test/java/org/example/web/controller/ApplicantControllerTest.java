@@ -137,6 +137,7 @@ class ApplicantControllerTest {
             .passwordDigest("password_digest").build();
         when(applicantService.save(any(Applicant.class), eq("password")))
             .thenReturn(Mono.just(applicant1));
+        when(jwtService.encode(any(Applicant.class))).thenReturn("jwt");
         // when, then
         webTestClient.post()
             .uri("/api/v1/applicants")
@@ -154,6 +155,7 @@ class ApplicantControllerTest {
             )
             .exchange()
             .expectStatus().isOk()
+            .expectCookie().valueEquals("token", "jwt")
             .expectBody(Applicant.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
@@ -182,7 +184,7 @@ class ApplicantControllerTest {
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区").build();
         when(applicantService.login("xxx@example.org", "password"))
             .thenReturn(Mono.just(applicant1));
-        when(jwtService.encode(applicant1)).thenReturn("jwt");
+        when(jwtService.encode(any(Applicant.class))).thenReturn("jwt");
         // when, then
         webTestClient.post()
             .uri("/api/v1/applicants/login")

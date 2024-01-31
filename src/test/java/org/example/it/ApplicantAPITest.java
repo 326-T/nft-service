@@ -214,6 +214,15 @@ public class ApplicantAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
+            .expectCookie().value("token", jwt -> {
+              Applicant applicant = jwtService.decode(jwt);
+              assertThat(applicant)
+                  .extracting(Applicant::getFirstName, Applicant::getLastName,
+                      Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
+                      Applicant::getPasswordDigest)
+                  .containsExactly("四郎", "田中", "aaa@example.org", "090-3333-4444",
+                      "東京都港区", null);
+            })
             .expectBody(Applicant.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
