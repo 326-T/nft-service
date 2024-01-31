@@ -63,19 +63,17 @@ public class CompanyAPITest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getName,
+                    .extracting(Company::getId, Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
                     .containsExactly(
-                        tuple("C株式会社", "zzz@example.org", "090-1111-2222",
-                            "東京都千代田区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"),
-                        tuple("B株式会社", "yyy@example.org", "090-9876-5432",
-                            "東京都新宿区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"),
-                        tuple("A株式会社", "xxx@example.org", "090-1234-5678",
-                            "東京都渋谷区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu")
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abe"),
+                            "C株式会社", "zzz@example.org", "090-1111-2222", "東京都千代田区",
+                            null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
+                            "B株式会社", "yyy@example.org", "090-9876-5432", "東京都新宿区", null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            "A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null)
                     )
 
             );
@@ -129,12 +127,11 @@ public class CompanyAPITest {
             .expectBody(Company.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getName,
+                    .extracting(Company::getId, Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
-                    .containsExactly("A株式会社", "xxx@example.org", "090-1234-5678",
-                        "東京都渋谷区",
-                        "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
                     )
             );
       }
@@ -204,15 +201,7 @@ public class CompanyAPITest {
                       Company::getPasswordDigest)
                   .containsExactly("D株式会社", "aaa@example.org", "090-3333-4444",
                       "東京都港区", null);
-            })
-            .expectBody(Company.class)
-            .consumeWith(result ->
-                assertThat(result.getResponseBody())
-                    .extracting(Company::getName,
-                        Company::getEmail, Company::getPhone, Company::getAddress)
-                    .containsExactly("D株式会社", "aaa@example.org", "090-3333-4444",
-                        "東京都港区")
-            );
+            });
       }
     }
   }

@@ -6,6 +6,7 @@ import org.example.service.CompanyService;
 import org.example.service.JwtService;
 import org.example.web.request.CompanyLoginRequest;
 import org.example.web.request.CompanyInsertRequest;
+import org.example.web.response.CompanyResponse;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,31 +33,32 @@ public class CompanyController {
   }
 
   @GetMapping
-  public Flux<Company> index() {
-    return companyService.findAll();
+  public Flux<CompanyResponse> index() {
+    return companyService.findAll().map(CompanyResponse::new);
   }
 
   @GetMapping("/{id}")
-  public Mono<Company> findByUuid(@PathVariable UUID id) {
-    return companyService.findByUuid(id);
+  public Mono<CompanyResponse> findByUuid(@PathVariable UUID id) {
+    return companyService.findByUuid(id).map(CompanyResponse::new);
   }
 
   @PostMapping
-  public Mono<Company> save(ServerWebExchange exchange, @RequestBody CompanyInsertRequest request) {
+  public Mono<Void> save(ServerWebExchange exchange, @RequestBody CompanyInsertRequest request) {
     return companyService.save(request.exportEntity(), request.getPassword())
         .doOnNext(company -> exchange.getResponse().addCookie(
             ResponseCookie
                 .from("token", jwtService.encodeCompany(company))
                 .path("/")
                 .httpOnly(true)
-                .build()));
+                .build()))
+        .then();
   }
 
   @PatchMapping("/{id}")
-  public Mono<Company> update(@PathVariable UUID id, @RequestBody CompanyInsertRequest request) {
+  public Mono<CompanyResponse> update(@PathVariable UUID id, @RequestBody CompanyInsertRequest request) {
     Company company = request.exportEntity();
     company.setUuid(id);
-    return companyService.update(request.exportEntity());
+    return companyService.update(request.exportEntity()).map(CompanyResponse::new);
   }
 
   @PostMapping("/login")
