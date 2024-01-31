@@ -78,19 +78,20 @@ class ResumeControllerTest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
                     .containsExactly(
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abd"),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             "2019年 C大学卒業", "カフェバイト", "英検2級",
                             "大手企業", "https://imageC.png"),
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abd"),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点",
                             "ベンチャー企業", "https://imageB.png"),
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
                             "外資企業", "https://imageA.png")
@@ -129,10 +130,11 @@ class ResumeControllerTest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
                         Resume::getUrls)
-                    .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
                         "居酒屋バイトリーダー",
                         "英検1級", "外資企業", "https://imageA.png")
@@ -169,11 +171,11 @@ class ResumeControllerTest {
             .expectBodyList(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation, Resume::getExperience, Resume::getSkills,
+                        Resume::getInterests, Resume::getUrls)
                     .containsExactly(
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
                             "外資企業", "https://imageA.png")
@@ -222,11 +224,11 @@ class ResumeControllerTest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation, Resume::getExperience, Resume::getSkills,
+                        Resume::getInterests, Resume::getUrls)
                     .containsExactly(
-                        UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
                         "居酒屋バイトリーダー", "英検1級", "外資企業",
                         "https://imageA.png")

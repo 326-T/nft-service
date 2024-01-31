@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.example.persistence.entity.Resume;
 import org.example.service.ResumeService;
 import org.example.web.request.ResumeInsertRequest;
+import org.example.web.response.ResumeResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,30 +27,30 @@ public class ResumeController {
   }
 
   @GetMapping
-  public Flux<Resume> index() {
-    return resumeService.findAll();
+  public Flux<ResumeResponse> index() {
+    return resumeService.findAll().map(ResumeResponse::new);
   }
 
   @GetMapping("/{id}")
-  public Mono<Resume> findByUuid(@PathVariable UUID id) {
-    return resumeService.findByUuid(id);
+  public Mono<ResumeResponse> findByUuid(@PathVariable UUID id) {
+    return resumeService.findByUuid(id).map(ResumeResponse::new);
   }
 
   @GetMapping("/applicant/{applicantId}")
-  public Flux<Resume> findByApplicantId(@PathVariable UUID applicantId) {
-    return resumeService.findByApplicantId(applicantId);
+  public Flux<ResumeResponse> findByApplicantId(@PathVariable UUID applicantId) {
+    return resumeService.findByApplicantId(applicantId).map(ResumeResponse::new);
   }
 
   @PostMapping
-  public Mono<Resume> save(@RequestBody ResumeInsertRequest request) {
-    return resumeService.insert(request.exportEntity());
+  public Mono<ResumeResponse> save(@RequestBody ResumeInsertRequest request) {
+    return resumeService.insert(request.exportEntity()).map(ResumeResponse::new);
   }
 
   @PatchMapping("/{id}")
-  public Mono<Resume> update(@PathVariable UUID id, @RequestBody ResumeInsertRequest request) {
+  public Mono<ResumeResponse> update(@PathVariable UUID id, @RequestBody ResumeInsertRequest request) {
     Resume resume = request.exportEntity();
     resume.setUuid(id);
-    return resumeService.update(request.exportEntity());
+    return resumeService.update(request.exportEntity()).map(ResumeResponse::new);
   }
 
   @DeleteMapping("/{id}")
