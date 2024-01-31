@@ -4,12 +4,12 @@ package org.example.it;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
+import java.util.UUID;
 import org.example.Main;
 import org.example.error.response.ErrorResponse;
+import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Company;
-import org.example.persistence.repository.CompanyRepository;
 import org.example.service.JwtService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(classes = Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,36 +34,13 @@ public class CompanyAPITest {
   private WebTestClient webTestClient;
   @Autowired
   private JwtService jwtService;
-  @Autowired
-  CompanyRepository companyRepository;
-  private String id;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    companyRepository.save(
-            Company.builder().name("A株式会社").email("xxx@example.org")
-                .phone("090-1234-5678").address("東京都渋谷区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    companyRepository.save(
-            Company.builder().name("B株式会社").email("yyy@example.org")
-                .phone("090-9876-5432").address("東京都新宿区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    companyRepository.save(
-            Company.builder().name("C株式会社").email("zzz@example.org")
-                .phone("090-1111-2222").address("東京都千代田区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    id = companyRepository.findByEmail("xxx@example.org").block().getId();
-    jwt = jwtService.encodeCompany(Company.builder().id("1").build());
-  }
-
-  @AfterEach
-  void tearDown() {
-    companyRepository.deleteAll().block();
+    jwt = jwtService.encodeCompany(
+        Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build());
   }
 
   @Nested
@@ -143,7 +121,8 @@ public class CompanyAPITest {
       void canFindById() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/companies/%s".formatted(id))
+            .uri("/api/v1/companies/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
@@ -170,7 +149,8 @@ public class CompanyAPITest {
       void authenticationError() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/companies/%s".formatted(id))
+            .uri("/api/v1/companies/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
@@ -189,6 +169,9 @@ public class CompanyAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class Save {
 
     @Nested
@@ -334,6 +317,9 @@ public class CompanyAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class DeleteById {
 
     @Nested
@@ -345,7 +331,7 @@ public class CompanyAPITest {
       void canDeleteTheCompany() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/companies/1")
+            .uri("/api/v1/companies/12345678-1234-1234-1234-123456789abc")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
@@ -362,7 +348,8 @@ public class CompanyAPITest {
       void authenticationError() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/companies/%s".formatted(id))
+            .uri("/api/v1/companies/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)

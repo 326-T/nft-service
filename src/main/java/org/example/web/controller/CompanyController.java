@@ -1,10 +1,11 @@
 package org.example.web.controller;
 
+import java.util.UUID;
 import org.example.persistence.entity.Company;
 import org.example.service.CompanyService;
 import org.example.service.JwtService;
 import org.example.web.request.CompanyLoginRequest;
-import org.example.web.request.CompanyRequest;
+import org.example.web.request.CompanyInsertRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,12 +36,12 @@ public class CompanyController {
   }
 
   @GetMapping("/{id}")
-  public Mono<Company> findById(@PathVariable String id) {
-    return companyService.findById(id);
+  public Mono<Company> findByUuid(@PathVariable UUID id) {
+    return companyService.findByUuid(id);
   }
 
   @PostMapping
-  public Mono<Company> save(ServerWebExchange exchange, @RequestBody CompanyRequest request) {
+  public Mono<Company> save(ServerWebExchange exchange, @RequestBody CompanyInsertRequest request) {
     return companyService.save(request.exportEntity(), request.getPassword())
         .doOnNext(company -> exchange.getResponse().addCookie(
             ResponseCookie
@@ -60,7 +61,7 @@ public class CompanyController {
   }
 
   @DeleteMapping("/{id}")
-  public Mono<Void> deleteById(@PathVariable String id) {
+  public Mono<Void> deleteById(@PathVariable UUID id) {
     return companyService.deleteById(id);
   }
 }

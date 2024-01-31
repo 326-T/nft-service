@@ -1,14 +1,14 @@
 package org.example.web.request;
 
+import java.util.UUID;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.persistence.entity.Company;
 
 @Data
 @NoArgsConstructor
-public class CompanyRequest {
+public class CompanyInsertRequest {
 
-  private String id;
   private String name;
   private String email;
   private String password;
@@ -17,7 +17,7 @@ public class CompanyRequest {
 
   public Company exportEntity() {
     return Company.builder()
-        .id(id)
+        .uuid(UUID.randomUUID())
         .name(name)
         .email(email)
         .passwordDigest(password)

@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import org.example.persistence.entity.Company;
 import org.example.service.CompanyService;
 import org.example.service.JwtService;
@@ -49,13 +50,16 @@ class CompanyControllerTest {
       @DisplayName("企業を全件取得できる")
       void findAllTheCompanies() {
         // given
-        Company applicant1 = Company.builder().id("1").name("A株式会社")
+        Company applicant1 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
-        Company applicant2 = Company.builder().id("2").name("B株式会社")
+        Company applicant2 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd")).name("B株式会社")
             .email("yyy@example.org").phone("090-9876-5432").address("東京都新宿区")
             .passwordDigest("").build();
-        Company applicant3 = Company.builder().id("3").name("C株式会社")
+        Company applicant3 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abe")).name("C株式会社")
             .email("zzz@example.org").phone("090-1111-2222").address("東京都千代田区")
             .passwordDigest("").build();
         when(applicantService.findAll())
@@ -69,15 +73,18 @@ class CompanyControllerTest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getId, Company::getName,
+                    .extracting(Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
                     .containsExactly(
-                        tuple("3", "C株式会社", "zzz@example.org", "090-1111-2222",
+                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "C株式会社",
+                            "zzz@example.org", "090-1111-2222",
                             "東京都千代田区", ""),
-                        tuple("2", "B株式会社", "yyy@example.org", "090-9876-5432",
+                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abd"), "B株式会社",
+                            "yyy@example.org", "090-9876-5432",
                             "東京都新宿区", ""),
-                        tuple("1", "A株式会社", "xxx@example.org", "090-1234-5678",
+                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社",
+                            "xxx@example.org", "090-1234-5678",
                             "東京都渋谷区", "")
                     )
 
@@ -97,23 +104,27 @@ class CompanyControllerTest {
       @DisplayName("企業を1件取得できる")
       void canFindTheCompany() {
         // given
-        Company applicant1 = Company.builder().id("1").name("A株式会社")
+        Company applicant1 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
-        when(applicantService.findById("1")).thenReturn(Mono.just(applicant1));
+        when(applicantService.findByUuid(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
+            Mono.just(applicant1));
         // when, then
         webTestClient.get()
-            .uri("/api/v1/companies/1")
+            .uri("/api/v1/companies/12345678-1234-1234-1234-123456789abc")
             .exchange()
             .expectStatus().isOk()
             .expectBody(Company.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getId, Company::getName,
+                    .extracting(Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
                     .containsExactly(
-                        "1", "A株式会社", "xxx@example.org", "090-1234-5678",
+                        UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社",
+                        "xxx@example.org", "090-1234-5678",
                         "東京都渋谷区", ""
                     )
             );
@@ -132,7 +143,8 @@ class CompanyControllerTest {
       @DisplayName("企業を登録できる")
       void canSaveTheCompany() {
         // given
-        Company applicant1 = Company.builder().id("1").name("D株式会社")
+        Company applicant1 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("D株式会社")
             .email("aaa@example.org").phone("090-3333-4444").address("東京都港区")
             .passwordDigest("password_digest").build();
         when(applicantService.save(any(Company.class), eq("password")))
@@ -158,10 +170,11 @@ class CompanyControllerTest {
             .expectBody(Company.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getId, Company::getName,
+                    .extracting(Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
-                    .containsExactly("1", "D株式会社", "aaa@example.org", "090-3333-4444",
+                    .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "D株式会社", "aaa@example.org", "090-3333-4444",
                         "東京都港区", "password_digest")
             );
       }
@@ -179,7 +192,8 @@ class CompanyControllerTest {
       @DisplayName("ログインできる")
       void canLogin() {
         // given
-        Company applicant1 = Company.builder().id("1").name("A株式会社")
+        Company applicant1 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区").build();
         when(applicantService.login("xxx@example.org", "password"))
             .thenReturn(Mono.just(applicant1));
@@ -212,10 +226,11 @@ class CompanyControllerTest {
       @DisplayName("企業を1件削除できる")
       void canDeleteTheCompany() {
         // given
-        when(applicantService.deleteById("1")).thenReturn(Mono.empty());
+        when(applicantService.deleteById(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(Mono.empty());
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/companies/1")
+            .uri("/api/v1/companies/12345678-1234-1234-1234-123456789abc")
             .exchange()
             .expectStatus().isOk()
             .expectBody().isEmpty();

@@ -1,24 +1,22 @@
 package org.example.persistence.repository;
 
-import com.mongodb.lang.Nullable;
+import java.util.UUID;
 import lombok.NonNull;
 import org.example.persistence.entity.Applicant;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface ApplicantRepository extends ReactiveMongoRepository<Applicant, String> {
-
-  @Query("{}")
-  @NonNull
-  Flux<Applicant> findAll(@Nullable Sort sort);
+public interface ApplicantRepository extends ReactiveCrudRepository<Applicant, String> {
 
   @NonNull
-  Mono<Applicant> findById(@NonNull String id);
+  Flux<Applicant> findAll(Sort sort);
+
+  @NonNull
+  Mono<Applicant> findByUuid(@NonNull UUID id);
 
   Mono<Applicant> findByEmail(@NonNull String email);
 
@@ -26,5 +24,5 @@ public interface ApplicantRepository extends ReactiveMongoRepository<Applicant, 
   Mono<Applicant> save(@NonNull Applicant applicant);
 
   @NonNull
-  Mono<Void> deleteById(@NonNull String id);
+  Mono<Void> deleteById(@NonNull UUID id);
 }

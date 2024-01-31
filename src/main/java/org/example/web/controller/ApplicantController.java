@@ -1,10 +1,11 @@
 package org.example.web.controller;
 
+import java.util.UUID;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
 import org.example.service.JwtService;
 import org.example.web.request.ApplicantLoginRequest;
-import org.example.web.request.ApplicantRequest;
+import org.example.web.request.ApplicantInsertRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,12 +36,12 @@ public class ApplicantController {
   }
 
   @GetMapping("/{id}")
-  public Mono<Applicant> findById(@PathVariable String id) {
-    return applicantService.findById(id);
+  public Mono<Applicant> findByUuid(@PathVariable UUID id) {
+    return applicantService.findByUuid(id);
   }
 
   @PostMapping
-  public Mono<Applicant> save(ServerWebExchange exchange, @RequestBody ApplicantRequest request) {
+  public Mono<Applicant> save(ServerWebExchange exchange, @RequestBody ApplicantInsertRequest request) {
     return applicantService.save(request.exportEntity(), request.getPassword())
         .doOnNext(applicant -> exchange.getResponse().addCookie(
             ResponseCookie
@@ -60,7 +61,7 @@ public class ApplicantController {
   }
 
   @DeleteMapping("/{id}")
-  public Mono<Void> deleteById(@PathVariable String id) {
+  public Mono<Void> deleteById(@PathVariable UUID id) {
     return applicantService.deleteById(id);
   }
 }

@@ -1,5 +1,6 @@
 package org.example.service;
 
+import java.util.UUID;
 import org.example.error.exception.PasswordAuthenticationException;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.repository.ApplicantRepository;
@@ -25,8 +26,8 @@ public class ApplicantService {
     return applicantRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt"));
   }
 
-  public Mono<Applicant> findById(String id) {
-    return applicantRepository.findById(id);
+  public Mono<Applicant> findByUuid(UUID id) {
+    return applicantRepository.findByUuid(id);
   }
 
   public Mono<Applicant> findByEmail(String email) {
@@ -45,7 +46,7 @@ public class ApplicantService {
             Mono.error(new PasswordAuthenticationException("Invalid email or password.")));
   }
 
-  public Mono<Void> deleteById(String id) {
+  public Mono<Void> deleteById(UUID id) {
     return applicantRepository.deleteById(id);
   }
 }

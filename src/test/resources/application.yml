@@ -2,29 +2,20 @@ server:
   port: 8080
 
 spring:
-  test:
-    context:
-      failure:
-        threshold: 1000000
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: scholarship
-      username: scholarship
-      password: scholarship
-      authentication-database: admin
-
-de:
-  flapdoodle:
-    mongodb:
-      embedded:
-        version: 6.0.2
-
-management:
-  health:
-    redis:
-      enabled: false
+  r2dbc:
+    url: r2dbc:h2:mem:///test_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4
+    username: test_db
+    password: test_db
+  h2:
+    console:
+      enabled: true
+  flyway:
+    url: jdbc:h2:mem:test_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4
+    user: test_db
+    password: test_db
+    clean-on-validation-error: true
+    baseline-on-migrate: true
+    clean-disabled: false
 
 jwt:
   secret-key: secret
