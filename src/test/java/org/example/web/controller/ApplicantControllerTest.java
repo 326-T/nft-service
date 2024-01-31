@@ -76,19 +76,20 @@ class ApplicantControllerTest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                    .extracting(Applicant::getId, Applicant::getUuid, Applicant::getFirstName,
+                        Applicant::getLastName,
                         Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
                         Applicant::getPasswordDigest)
                     .containsExactly(
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "三郎",
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abe"), "三郎",
                             "佐藤", "zzz@example.org", "090-1111-2222",
-                            "東京都千代田区", ""),
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abd"), "次郎",
+                            "東京都千代田区", null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"), "次郎",
                             "鈴木", "yyy@example.org", "090-9876-5432",
-                            "東京都新宿区", ""),
-                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
+                            "東京都新宿区", null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
                             "山田", "xxx@example.org", "090-1234-5678",
-                            "東京都渋谷区", "")
+                            "東京都渋谷区", null)
                     )
 
             );
@@ -122,13 +123,12 @@ class ApplicantControllerTest {
             .expectBody(Applicant.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                    .extracting(Applicant::getId, Applicant::getUuid, Applicant::getFirstName,
+                        Applicant::getLastName,
                         Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
                         Applicant::getPasswordDigest)
-                    .containsExactly(
-                        UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎", "山田",
-                        "xxx@example.org", "090-1234-5678",
-                        "東京都渋谷区", ""
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
                     )
             );
       }
@@ -171,17 +171,7 @@ class ApplicantControllerTest {
             )
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "jwt")
-            .expectBody(Applicant.class)
-            .consumeWith(result ->
-                assertThat(result.getResponseBody())
-                    .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
-                        Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
-                        Applicant::getPasswordDigest)
-                    .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                        "四郎", "田中", "aaa@example.org", "090-3333-4444",
-                        "東京都港区", "password_digest")
-            );
+            .expectCookie().valueEquals("token", "jwt");
       }
     }
   }

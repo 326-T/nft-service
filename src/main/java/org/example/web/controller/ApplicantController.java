@@ -4,8 +4,9 @@ import java.util.UUID;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
 import org.example.service.JwtService;
-import org.example.web.request.ApplicantLoginRequest;
 import org.example.web.request.ApplicantInsertRequest;
+import org.example.web.request.ApplicantLoginRequest;
+import org.example.web.response.ApplicantResponse;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,31 +33,33 @@ public class ApplicantController {
   }
 
   @GetMapping
-  public Flux<Applicant> index() {
-    return applicantService.findAll();
+  public Flux<ApplicantResponse> index() {
+    return applicantService.findAll().map(ApplicantResponse::new);
   }
 
   @GetMapping("/{id}")
-  public Mono<Applicant> findByUuid(@PathVariable UUID id) {
-    return applicantService.findByUuid(id);
+  public Mono<ApplicantResponse> findByUuid(@PathVariable UUID id) {
+    return applicantService.findByUuid(id).map(ApplicantResponse::new);
   }
 
   @PostMapping
-  public Mono<Applicant> save(ServerWebExchange exchange, @RequestBody ApplicantInsertRequest request) {
+  public Mono<Void> save(ServerWebExchange exchange, @RequestBody ApplicantInsertRequest request) {
     return applicantService.save(request.exportEntity(), request.getPassword())
         .doOnNext(applicant -> exchange.getResponse().addCookie(
             ResponseCookie
                 .from("token", jwtService.encodeApplicant(applicant))
                 .path("/")
                 .httpOnly(true)
-                .build()));
+                .build()))
+        .then();
   }
 
   @PatchMapping("/{id}")
-  public Mono<Applicant> update(@PathVariable UUID id, @RequestBody ApplicantInsertRequest request) {
+  public Mono<ApplicantResponse> update(@PathVariable UUID id,
+      @RequestBody ApplicantInsertRequest request) {
     Applicant applicant = request.exportEntity();
     applicant.setUuid(id);
-    return applicantService.update(request.exportEntity());
+    return applicantService.update(request.exportEntity()).map(ApplicantResponse::new);
   }
 
   @PostMapping("/login")
