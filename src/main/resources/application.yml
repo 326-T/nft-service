@@ -16,6 +16,9 @@ spring:
     clean-on-validation-error: true
     baseline-on-migrate: true
     clean-disabled: false
+    locations:
+      - classpath:db/migration
+      - classpath:db/sample
 
 jwt:
   secret-key: secret

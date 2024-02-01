@@ -8,7 +8,9 @@ import java.util.UUID;
 import org.example.Main;
 import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
+import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Company;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
@@ -34,13 +36,15 @@ public class CompanyAPITest {
   private WebTestClient webTestClient;
   @Autowired
   private JwtService jwtService;
+  @Autowired
+  private Base64Service base64Service;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    jwt = jwtService.encodeCompany(
-        Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build());
+    jwt = base64Service.encode(jwtService.encodeApplicant(
+        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -194,7 +198,7 @@ public class CompanyAPITest {
             .exchange()
             .expectStatus().isOk()
             .expectCookie().value("token", jwt -> {
-              Company company = jwtService.decodeCompany(jwt);
+              Company company = jwtService.decodeCompany(base64Service.decode(jwt));
               assertThat(company)
                   .extracting(Company::getName,
                       Company::getEmail, Company::getPhone, Company::getAddress,
@@ -229,7 +233,7 @@ public class CompanyAPITest {
             .exchange()
             .expectStatus().isOk()
             .expectCookie().value("token", jwt -> {
-              Company company = jwtService.decodeCompany(jwt);
+              Company company = jwtService.decodeCompany(base64Service.decode(jwt));
               assertThat(company)
                   .extracting(Company::getName,
                       Company::getEmail, Company::getPhone, Company::getAddress,

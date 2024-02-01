@@ -2,10 +2,11 @@ package org.example.web.controller;
 
 import java.util.UUID;
 import org.example.persistence.entity.Company;
+import org.example.service.Base64Service;
 import org.example.service.CompanyService;
 import org.example.service.JwtService;
-import org.example.web.request.CompanyLoginRequest;
 import org.example.web.request.CompanyInsertRequest;
+import org.example.web.request.CompanyLoginRequest;
 import org.example.web.response.CompanyResponse;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,10 +27,14 @@ public class CompanyController {
 
   private final CompanyService companyService;
   private final JwtService jwtService;
+  private final Base64Service base64Service;
 
-  public CompanyController(CompanyService companyService, JwtService jwtService) {
+
+  public CompanyController(CompanyService companyService, JwtService jwtService,
+      Base64Service base64Service) {
     this.companyService = companyService;
     this.jwtService = jwtService;
+    this.base64Service = base64Service;
   }
 
   @GetMapping
@@ -45,9 +50,11 @@ public class CompanyController {
   @PostMapping
   public Mono<Void> save(ServerWebExchange exchange, @RequestBody CompanyInsertRequest request) {
     return companyService.save(request.exportEntity(), request.getPassword())
-        .doOnNext(company -> exchange.getResponse().addCookie(
+        .map(jwtService::encodeCompany)
+        .map(base64Service::encode)
+        .doOnNext(jwt -> exchange.getResponse().addCookie(
             ResponseCookie
-                .from("token", jwtService.encodeCompany(company))
+                .from("token", jwt)
                 .path("/")
                 .httpOnly(true)
                 .build()))
@@ -55,7 +62,8 @@ public class CompanyController {
   }
 
   @PatchMapping("/{id}")
-  public Mono<CompanyResponse> update(@PathVariable UUID id, @RequestBody CompanyInsertRequest request) {
+  public Mono<CompanyResponse> update(@PathVariable UUID id,
+      @RequestBody CompanyInsertRequest request) {
     Company company = request.exportEntity();
     company.setUuid(id);
     return companyService.update(request.exportEntity()).map(CompanyResponse::new);
@@ -65,6 +73,7 @@ public class CompanyController {
   public Mono<Void> login(ServerWebExchange exchange, @RequestBody CompanyLoginRequest request) {
     return companyService.login(request.getEmail(), request.getPassword())
         .map(jwtService::encodeCompany)
+        .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse()
             .addCookie(ResponseCookie.from("token", jwt).path("/").httpOnly(true).build()))
         .then();

@@ -9,6 +9,7 @@ import org.example.Main;
 import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
@@ -34,13 +35,15 @@ public class ApplicantAPITest {
   private WebTestClient webTestClient;
   @Autowired
   private JwtService jwtService;
+  @Autowired
+  private Base64Service base64Service;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    jwt = jwtService.encodeApplicant(
-        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build());
+    jwt = base64Service.encode(jwtService.encodeApplicant(
+        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -196,7 +199,7 @@ public class ApplicantAPITest {
             .exchange()
             .expectStatus().isOk()
             .expectCookie().value("token", jwt -> {
-              Applicant applicant = jwtService.decodeApplicant(jwt);
+              Applicant applicant = jwtService.decodeApplicant(base64Service.decode(jwt));
               assertThat(applicant)
                   .extracting(Applicant::getFirstName, Applicant::getLastName,
                       Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
@@ -231,7 +234,7 @@ public class ApplicantAPITest {
             .exchange()
             .expectStatus().isOk()
             .expectCookie().value("token", jwt -> {
-              Applicant applicant = jwtService.decodeApplicant(jwt);
+              Applicant applicant = jwtService.decodeApplicant(base64Service.decode(jwt));
               assertThat(applicant)
                   .extracting(Applicant::getFirstName, Applicant::getLastName,
                       Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,

@@ -10,6 +10,7 @@ import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Resume;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
@@ -35,13 +36,15 @@ public class ResumeAPITest {
   private WebTestClient webTestClient;
   @Autowired
   private JwtService jwtService;
+  @Autowired
+  private Base64Service base64Service;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    jwt = jwtService.encodeApplicant(
-        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build());
+    jwt = base64Service.encode(jwtService.encodeApplicant(
+        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -185,7 +188,7 @@ public class ResumeAPITest {
       void canFindByApplicantId() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes/applicant/12345678-1234-1234-1234-123456789abc")
+            .uri("/api/v1/resumes/applicant")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()

@@ -3,6 +3,7 @@ package org.example.web.controller;
 import java.util.UUID;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.example.web.request.ApplicantInsertRequest;
 import org.example.web.request.ApplicantLoginRequest;
@@ -26,10 +27,13 @@ public class ApplicantController {
 
   private final ApplicantService applicantService;
   private final JwtService jwtService;
+  private final Base64Service base64Service;
 
-  public ApplicantController(ApplicantService applicantService, JwtService jwtService) {
+  public ApplicantController(ApplicantService applicantService, JwtService jwtService,
+      Base64Service base64Service) {
     this.applicantService = applicantService;
     this.jwtService = jwtService;
+    this.base64Service = base64Service;
   }
 
   @GetMapping
@@ -45,9 +49,11 @@ public class ApplicantController {
   @PostMapping
   public Mono<Void> save(ServerWebExchange exchange, @RequestBody ApplicantInsertRequest request) {
     return applicantService.save(request.exportEntity(), request.getPassword())
-        .doOnNext(applicant -> exchange.getResponse().addCookie(
+        .map(jwtService::encodeApplicant)
+        .map(base64Service::encode)
+        .doOnNext(jwt -> exchange.getResponse().addCookie(
             ResponseCookie
-                .from("token", jwtService.encodeApplicant(applicant))
+                .from("token", jwt)
                 .path("/")
                 .httpOnly(true)
                 .build()))
@@ -66,6 +72,7 @@ public class ApplicantController {
   public Mono<Void> login(ServerWebExchange exchange, @RequestBody ApplicantLoginRequest request) {
     return applicantService.login(request.getEmail(), request.getPassword())
         .map(jwtService::encodeApplicant)
+        .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse()
             .addCookie(ResponseCookie.from("token", jwt).path("/").httpOnly(true).build()))
         .then();

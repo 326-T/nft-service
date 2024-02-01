@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 import org.example.persistence.entity.Company;
+import org.example.service.Base64Service;
 import org.example.service.CompanyService;
 import org.example.service.JwtService;
 import org.example.web.filter.AuthenticationWebFilter;
@@ -36,6 +37,8 @@ class CompanyControllerTest {
   private CompanyService applicantService;
   @MockBean
   private JwtService jwtService;
+  @MockBean
+  private Base64Service base64Service;
   @Autowired
   private WebTestClient webTestClient;
 
@@ -146,6 +149,7 @@ class CompanyControllerTest {
         when(applicantService.save(any(Company.class), eq("password")))
             .thenReturn(Mono.just(applicant1));
         when(jwtService.encodeCompany(any(Company.class))).thenReturn("jwt");
+        when(base64Service.encode("jwt")).thenReturn("base64");
         // when, then
         webTestClient.post()
             .uri("/api/v1/companies")
@@ -162,7 +166,7 @@ class CompanyControllerTest {
             )
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "jwt");
+            .expectCookie().valueEquals("token", "base64");
       }
     }
   }
@@ -184,6 +188,7 @@ class CompanyControllerTest {
         when(applicantService.login("xxx@example.org", "password"))
             .thenReturn(Mono.just(applicant1));
         when(jwtService.encodeCompany(any(Company.class))).thenReturn("jwt");
+        when(base64Service.encode("jwt")).thenReturn("base64");
         // when, then
         webTestClient.post()
             .uri("/api/v1/companies/login")
@@ -196,7 +201,7 @@ class CompanyControllerTest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "jwt");
+            .expectCookie().valueEquals("token", "base64");
       }
     }
   }
