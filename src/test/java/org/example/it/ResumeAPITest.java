@@ -70,20 +70,20 @@ public class ResumeAPITest {
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abe"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abe"),
                             "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級", "外資企業",
-                            "https://imageA.png"),
+                            "https://imageA.png", "3.png"),
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点", "ベンチャー企業",
-                            "https://imageB.png"),
+                            "https://imageB.png", "2.png"),
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                            "https://imageC.png")
+                            "https://imageC.png", "1.png")
                     )
 
             );
@@ -139,11 +139,11 @@ public class ResumeAPITest {
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                        "https://imageC.png")
+                        "https://imageC.png", "1.png")
             );
       }
     }
@@ -198,12 +198,12 @@ public class ResumeAPITest {
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                            "https://imageC.png"))
+                            "https://imageC.png", "1.png"))
             );
       }
     }
@@ -260,7 +260,8 @@ public class ResumeAPITest {
                   "experience": "居酒屋バイトリーダー",
                   "skills": "英検1級",
                   "interests": "外資企業",
-                  "urls": "https://imageA.png"
+                  "urls": "https://imageA.png",
+                  "picture": "3.png"
                 }
                 """
             )
@@ -271,10 +272,10 @@ public class ResumeAPITest {
                 assertThat(result.getResponseBody())
                     .extracting(Resume::getId, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                        "外資企業", "https://imageA.png")
+                        "外資企業", "https://imageA.png", "3.png")
             );
       }
     }
@@ -297,7 +298,8 @@ public class ResumeAPITest {
                   "experience": "居酒屋バイトリーダー",
                   "skills": "英検1級",
                   "interests": "外資企業",
-                  "urls": "https://imageA.png"
+                  "urls": "https://imageA.png",
+                  "picture": "3.png"
                 }
                 """
             )

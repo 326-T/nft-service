@@ -40,25 +40,27 @@ class ResumeRepositoryTest {
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abe"), "2021年 A大学卒業",
-                    "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                    "居酒屋バイトリーダー", "英検1級", "外資企業", "https://imageA.png", "3.png"))
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abd"), "2020年 B大学卒業",
-                    "コンビニバイト", "TOEIC 900点",
-                    "ベンチャー企業", "https://imageB.png"))
+                    "コンビニバイト", "TOEIC 900点", "ベンチャー企業", "https://imageB.png",
+                    "2.png"))
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                    "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                    "https://imageC.png"))
+                    "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業", "https://imageC.png",
+                    "1.png"))
             .verifyComplete();
       }
     }
@@ -81,11 +83,12 @@ class ResumeRepositoryTest {
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                    "https://imageC.png"))
+                    "https://imageC.png", "1.png"))
             .verifyComplete();
       }
     }
@@ -108,11 +111,12 @@ class ResumeRepositoryTest {
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                    "https://imageC.png"))
+                    "https://imageC.png", "1.png"))
             .verifyComplete();
       }
     }
@@ -132,20 +136,22 @@ class ResumeRepositoryTest {
       @DisplayName("保存できること")
       void save() {
         // given
-        Resume resume = Resume.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abf"))
+        Resume resume = Resume.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abf"))
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2018年 D大学卒業").experience("飲食店バイト").skills("英検3級")
-            .interests("中小企業").urls("https://imageD.png").build();
+            .interests("中小企業").urls("https://imageD.png").picture("4.png").build();
         // when
         Mono<Resume> actual = resumeRepository.save(resume);
         // then
         StepVerifier.create(actual)
             .assertNext(actualResume -> assertThat(actualResume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
-                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abf"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abd"), "2018年 D大学卒業",
-                    "飲食店バイト", "英検3級", "中小企業", "https://imageD.png"))
+                    "飲食店バイト", "英検3級", "中小企業", "https://imageD.png", "4.png"))
             .verifyComplete();
       }
     }

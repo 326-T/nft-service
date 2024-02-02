@@ -43,19 +43,19 @@ class ResumeServiceTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         Resume resume2 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2020年 B大学卒業")
             .experience("コンビニバイト").skills("TOEIC 900点").interests("ベンチャー企業")
-            .urls("https://imageB.png").build();
+            .urls("https://imageB.png").picture("2.png").build();
         Resume resume3 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abe"))
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abe"))
             .education("2019年 C大学卒業")
             .experience("カフェバイト").skills("英検2級").interests("大手企業")
-            .urls("https://imageC.png").build();
+            .urls("https://imageC.png").picture("1.png").build();
         when(resumeRepository.findAll(any(Sort.class)))
             .thenReturn(Flux.just(resume3, resume2, resume1));
         // when
@@ -65,27 +65,27 @@ class ResumeServiceTest {
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                    Resume::getUrls)
+                    Resume::getUrls, Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abe"), "2019年 C大学卒業",
                     "カフェバイト", "英検2級",
-                    "大手企業", "https://imageC.png"))
+                    "大手企業", "https://imageC.png", "1.png"))
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                    Resume::getUrls)
+                    Resume::getUrls, Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abd"), "2020年 B大学卒業",
                     "コンビニバイト", "TOEIC 900点",
-                    "ベンチャー企業", "https://imageB.png"))
+                    "ベンチャー企業", "https://imageB.png", "2.png"))
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                    Resume::getUrls)
+                    Resume::getUrls, Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
                     "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                    "外資企業", "https://imageA.png", "3.png"))
             .verifyComplete();
       }
     }
@@ -107,7 +107,7 @@ class ResumeServiceTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         when(resumeRepository.findByUuid(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
             Mono.just(resume1));
@@ -119,11 +119,11 @@ class ResumeServiceTest {
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                    Resume::getUrls)
+                    Resume::getUrls, Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
                     "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                    "外資企業", "https://imageA.png", "3.png"))
             .verifyComplete();
       }
     }
@@ -145,7 +145,7 @@ class ResumeServiceTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         when(resumeRepository.findByApplicantUuid(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
             Flux.just(resume1));
@@ -157,11 +157,11 @@ class ResumeServiceTest {
             .assertNext(resume -> assertThat(resume)
                 .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
                     Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                    Resume::getUrls)
+                    Resume::getUrls, Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
                     "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                    "外資企業", "https://imageA.png", "3.png"))
             .verifyComplete();
       }
     }
@@ -182,7 +182,7 @@ class ResumeServiceTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abf"))
             .education("2018年 D大学卒業")
             .experience("飲食店バイト").skills("英検3級").interests("中小企業")
-            .urls("https://imageD.png").build();
+            .urls("https://imageD.png").picture("4.png").build();
         when(resumeRepository.save(resume)).thenReturn(Mono.just(resume));
         // when
         Mono<Resume> actual = resumeService.insert(resume);
@@ -190,10 +190,10 @@ class ResumeServiceTest {
         StepVerifier.create(actual)
             .assertNext(resume1 -> assertThat(resume1)
                 .extracting(Resume::getApplicantUuid, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getUrls)
+                    Resume::getSkills, Resume::getInterests, Resume::getUrls, Resume::getPicture)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abf"),
                     "2018年 D大学卒業", "飲食店バイト", "英検3級",
-                    "中小企業", "https://imageD.png"))
+                    "中小企業", "https://imageD.png", "4.png"))
             .verifyComplete();
       }
     }

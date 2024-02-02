@@ -59,19 +59,19 @@ class ResumeControllerTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         Resume resume2 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2020年 B大学卒業")
             .experience("コンビニバイト").skills("TOEIC 900点").interests("ベンチャー企業")
-            .urls("https://imageB.png").build();
+            .urls("https://imageB.png").picture("2.png").build();
         Resume resume3 = Resume.builder()
             .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
             .education("2019年 C大学卒業")
             .experience("カフェバイト").skills("英検2級").interests("大手企業")
-            .urls("https://imageC.png").build();
+            .urls("https://imageC.png").picture("1.png").build();
         when(resumeService.findAll())
             .thenReturn(Flux.just(resume3, resume2, resume1));
         // when, then
@@ -86,20 +86,20 @@ class ResumeControllerTest {
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             "2019年 C大学卒業", "カフェバイト", "英検2級",
-                            "大手企業", "https://imageC.png"),
+                            "大手企業", "https://imageC.png", "1.png"),
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abd"),
                             "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点",
-                            "ベンチャー企業", "https://imageB.png"),
+                            "ベンチャー企業", "https://imageB.png", "2.png"),
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                            "外資企業", "https://imageA.png")
+                            "外資企業", "https://imageA.png", "3.png")
                     )
 
             );
@@ -123,7 +123,7 @@ class ResumeControllerTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         when(resumeService.findByUuid(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
             Mono.just(resume1));
@@ -138,11 +138,11 @@ class ResumeControllerTest {
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls)
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
-                        "居酒屋バイトリーダー",
-                        "英検1級", "外資企業", "https://imageA.png")
+                        "居酒屋バイトリーダー", "英検1級", "外資企業", "https://imageA.png",
+                        "3.png")
             );
       }
     }
@@ -164,7 +164,7 @@ class ResumeControllerTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         when(resumeService.findByApplicantId(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
             Flux.just(resume1));
@@ -182,12 +182,12 @@ class ResumeControllerTest {
                 assertThat(result.getResponseBody())
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation, Resume::getExperience, Resume::getSkills,
-                        Resume::getInterests, Resume::getUrls)
+                        Resume::getInterests, Resume::getUrls, Resume::getPicture)
                     .containsExactly(
                         tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                             "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                            "外資企業", "https://imageA.png")
+                            "外資企業", "https://imageA.png", "3.png")
                     )
             );
       }
@@ -210,7 +210,7 @@ class ResumeControllerTest {
             .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
             .education("2021年 A大学卒業")
             .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .urls("https://imageA.png").build();
+            .urls("https://imageA.png").picture("3.png").build();
         when(resumeService.insert(any(Resume.class)))
             .thenReturn(Mono.just(resume1));
         when(reactiveContextService.getCurrentApplicant(any(ServerWebExchange.class)))
@@ -228,7 +228,8 @@ class ResumeControllerTest {
                   "experience": "居酒屋バイトリーダー",
                   "skills": "英検1級",
                   "interests": "外資企業",
-                  "urls": "https://imageA.png"
+                  "urls": "https://imageA.png",
+                  "picture": "3.png"
                 }
                 """
             )
@@ -239,12 +240,12 @@ class ResumeControllerTest {
                 assertThat(result.getResponseBody())
                     .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
                         Resume::getEducation, Resume::getExperience, Resume::getSkills,
-                        Resume::getInterests, Resume::getUrls)
+                        Resume::getInterests, Resume::getUrls, Resume::getPicture)
                     .containsExactly(
                         null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"), "2021年 A大学卒業",
-                        "居酒屋バイトリーダー", "英検1級", "外資企業",
-                        "https://imageA.png")
+                        "居酒屋バイトリーダー", "英検1級", "外資企業", "https://imageA.png",
+                        "3.png")
             );
       }
     }
