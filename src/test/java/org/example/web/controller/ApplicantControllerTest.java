@@ -175,7 +175,7 @@ class ApplicantControllerTest {
             )
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "base64");
+            .expectCookie().valueEquals("applicant-token", "base64");
       }
     }
   }
@@ -211,7 +211,7 @@ class ApplicantControllerTest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "base64");
+            .expectCookie().valueEquals("applicant-token", "base64");
       }
     }
   }

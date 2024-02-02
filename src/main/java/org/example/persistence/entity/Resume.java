@@ -26,6 +26,7 @@ public class Resume {
   private String skills;
   private String interests;
   private String urls;
+  private String picture;
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

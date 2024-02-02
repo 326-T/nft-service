@@ -198,7 +198,7 @@ public class ApplicantAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
+            .expectCookie().value("applicant-token", jwt -> {
               Applicant applicant = jwtService.decodeApplicant(base64Service.decode(jwt));
               assertThat(applicant)
                   .extracting(Applicant::getFirstName, Applicant::getLastName,
@@ -233,7 +233,7 @@ public class ApplicantAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
+            .expectCookie().value("applicant-token", jwt -> {
               Applicant applicant = jwtService.decodeApplicant(base64Service.decode(jwt));
               assertThat(applicant)
                   .extracting(Applicant::getFirstName, Applicant::getLastName,

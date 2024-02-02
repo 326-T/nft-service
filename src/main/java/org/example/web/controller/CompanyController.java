@@ -54,7 +54,7 @@ public class CompanyController {
         .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse().addCookie(
             ResponseCookie
-                .from("token", jwt)
+                .from("company-token", jwt)
                 .path("/")
                 .httpOnly(true)
                 .build()))
@@ -75,7 +75,7 @@ public class CompanyController {
         .map(jwtService::encodeCompany)
         .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse()
-            .addCookie(ResponseCookie.from("token", jwt).path("/").httpOnly(true).build()))
+            .addCookie(ResponseCookie.from("company-token", jwt).path("/").httpOnly(true).build()))
         .then();
   }
 

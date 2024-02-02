@@ -166,7 +166,7 @@ class CompanyControllerTest {
             )
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "base64");
+            .expectCookie().valueEquals("company-token", "base64");
       }
     }
   }
@@ -201,7 +201,7 @@ class CompanyControllerTest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("token", "base64");
+            .expectCookie().valueEquals("company-token", "base64");
       }
     }
   }

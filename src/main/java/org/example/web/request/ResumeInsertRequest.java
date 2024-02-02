@@ -15,6 +15,7 @@ public class ResumeInsertRequest {
   private String skills;
   private String interests;
   private String urls;
+  private String picture;
 
   public Resume exportEntity() {
     return Resume.builder()
@@ -25,6 +26,7 @@ public class ResumeInsertRequest {
         .skills(skills)
         .interests(interests)
         .urls(urls)
+        .picture(picture)
         .build();
   }
 }

@@ -1,4 +1,4 @@
-INSERT INTO resumes (applicant_uuid, uuid, education, experience, skills, interests, urls)
+INSERT INTO resumes (applicant_uuid, uuid, education, experience, skills, interests, urls, picture)
 VALUES
   -- 人物A
   ('d6f0a88d-02b3-4a41-8a0e-7d02e26826f1', '6e3a297c-4816-4a41-8bd6-5f4f3f7de879',
@@ -6,8 +6,10 @@ VALUES
    '経済学部学生団体の代表, 市場分析に関する論文共同執筆',
    '日商簿記2級, TOEIC 850点',
    '市場分析, データ駆動型経済政策',
-   'カフェでのアルバイト経験'),
+   'カフェでのアルバイト経験', '/takeda.JPG');
 
+INSERT INTO resumes (applicant_uuid, uuid, education, experience, skills, interests, urls)
+VALUES
   -- 人物B
   ('4ccf1d47-72b3-4c8e-9f29-451ea85f0ef0', '173d21d0-2c9d-4e72-98c9-e48a05176a58',
    '2024年 東京工業大学 工学部 情報工学科 卒業予定, 2020年 東京都立科学技術高等学校 卒業',

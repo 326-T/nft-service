@@ -15,6 +15,7 @@ public class ResumeResponse {
   private final String skills;
   private final String interests;
   private final String urls;
+  private final String picture;
   private final LocalDateTime createdAt;
   private final LocalDateTime updatedAt;
   private final Long version;
@@ -27,6 +28,7 @@ public class ResumeResponse {
     this.skills = resume.getSkills();
     this.interests = resume.getInterests();
     this.urls = resume.getUrls();
+    this.picture = resume.getPicture();
     this.createdAt = resume.getCreatedAt();
     this.updatedAt = resume.getUpdatedAt();
     this.version = resume.getVersion();

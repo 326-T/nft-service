@@ -53,7 +53,7 @@ public class ApplicantController {
         .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse().addCookie(
             ResponseCookie
-                .from("token", jwt)
+                .from("applicant-token", jwt)
                 .path("/")
                 .httpOnly(true)
                 .build()))
@@ -74,7 +74,7 @@ public class ApplicantController {
         .map(jwtService::encodeApplicant)
         .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse()
-            .addCookie(ResponseCookie.from("token", jwt).path("/").httpOnly(true).build()))
+            .addCookie(ResponseCookie.from("applicant-token", jwt).path("/").httpOnly(true).build()))
         .then();
   }
 

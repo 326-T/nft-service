@@ -197,7 +197,7 @@ public class CompanyAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
+            .expectCookie().value("company-token", jwt -> {
               Company company = jwtService.decodeCompany(base64Service.decode(jwt));
               assertThat(company)
                   .extracting(Company::getName,
@@ -232,7 +232,7 @@ public class CompanyAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
+            .expectCookie().value("company-token", jwt -> {
               Company company = jwtService.decodeCompany(base64Service.decode(jwt));
               assertThat(company)
                   .extracting(Company::getName,
