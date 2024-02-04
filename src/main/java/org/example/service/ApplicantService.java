@@ -1,5 +1,8 @@
 package org.example.service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+import org.example.error.exception.NotFoundException;
 import org.example.error.exception.PasswordAuthenticationException;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.repository.ApplicantRepository;
@@ -25,8 +28,8 @@ public class ApplicantService {
     return applicantRepository.findAll(Sort.by(Sort.Direction.DESC, "updatedAt"));
   }
 
-  public Mono<Applicant> findById(String id) {
-    return applicantRepository.findById(id);
+  public Mono<Applicant> findByUuid(UUID id) {
+    return applicantRepository.findByUuid(id);
   }
 
   public Mono<Applicant> findByEmail(String email) {
@@ -38,6 +41,25 @@ public class ApplicantService {
     return applicantRepository.save(applicant);
   }
 
+  public Mono<Applicant> update(Applicant applicant) {
+    return applicantRepository.findByUuid(applicant.getUuid())
+        .switchIfEmpty(Mono.error(new NotFoundException("Applicant not found.")))
+        .map(old -> Applicant.builder()
+            .id(old.getId())
+            .uuid(old.getUuid())
+            .firstName(applicant.getFirstName())
+            .lastName(applicant.getLastName())
+            .email(applicant.getEmail())
+            .phone(applicant.getPhone())
+            .address(applicant.getAddress())
+            .createdAt(old.getCreatedAt())
+            .updatedAt(LocalDateTime.now())
+            .version(old.getVersion() + 1)
+            .passwordDigest(old.getPasswordDigest())
+            .build())
+        .flatMap(applicantRepository::save);
+  }
+
   public Mono<Applicant> login(String email, String password) {
     return applicantRepository.findByEmail(email)
         .filter(present -> passwordEncoder.matches(password, present.getPasswordDigest()))
@@ -45,7 +67,7 @@ public class ApplicantService {
             Mono.error(new PasswordAuthenticationException("Invalid email or password.")));
   }
 
-  public Mono<Void> deleteById(String id) {
-    return applicantRepository.deleteById(id);
+  public Mono<Void> deleteById(UUID id) {
+    return applicantRepository.deleteByUuid(id);
   }
 }

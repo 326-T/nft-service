@@ -8,7 +8,6 @@ import org.example.config.AuthConfig;
 import org.example.constant.ContextKeys;
 import org.example.error.exception.UnauthenticatedException;
 import org.example.persistence.entity.Applicant;
-import org.example.service.ApplicantService;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.springframework.core.annotation.Order;
@@ -25,14 +24,12 @@ import reactor.core.publisher.Mono;
 public class AuthenticationWebFilter implements WebFilter {
 
   private final JwtService jwtService;
-  private final ApplicantService applicantService;
   private final Base64Service base64Service;
   private final AuthConfig authConfig;
 
-  public AuthenticationWebFilter(JwtService jwtService, ApplicantService applicantService,
-      Base64Service base64Service, AuthConfig authConfig) {
+  public AuthenticationWebFilter(JwtService jwtService, Base64Service base64Service,
+      AuthConfig authConfig) {
     this.jwtService = jwtService;
-    this.applicantService = applicantService;
     this.base64Service = base64Service;
     this.authConfig = authConfig;
   }
@@ -55,7 +52,7 @@ public class AuthenticationWebFilter implements WebFilter {
     }
     if (Arrays.stream(authConfig.getNonAuthPaths())
         .anyMatch(
-            p -> Objects.equals(p.getMethod(), exchange.getRequest().getMethod().toString()) ||
+            p -> Objects.equals(p.getMethod(), exchange.getRequest().getMethod().toString()) &&
                 Objects.equals(p.getPath(), exchange.getRequest().getPath().toString()))) {
       return chain.filter(exchange);
     }
@@ -64,8 +61,8 @@ public class AuthenticationWebFilter implements WebFilter {
       return Mono.error(new UnauthenticatedException("Authorization headerがありません。"));
     }
     return Mono.just(cookie.getValue())
-        .map(this::jwtChain)
-        .doOnNext(u -> exchange.getAttributes().put(ContextKeys.APPLICANT_KEY, u))
+        .flatMap(this::jwtChain)
+        .doOnNext(a -> exchange.getAttributes().put(ContextKeys.APPLICANT_KEY, a))
         .then(chain.filter(exchange));
   }
 
@@ -80,7 +77,6 @@ public class AuthenticationWebFilter implements WebFilter {
     return Mono.just(token)
         .map(base64Service::decode)
         .map(jwtService::decodeApplicant)
-        .flatMap(a -> applicantService.findByEmail(a.getEmail()))
         .switchIfEmpty(Mono.error(new UnauthenticatedException("存在しないユーザです。")));
   }
 }

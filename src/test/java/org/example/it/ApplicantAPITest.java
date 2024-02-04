@@ -4,12 +4,13 @@ package org.example.it;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
+import java.util.UUID;
 import org.example.Main;
 import org.example.error.response.ErrorResponse;
+import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
-import org.example.persistence.repository.ApplicantRepository;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(classes = Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -34,35 +36,14 @@ public class ApplicantAPITest {
   @Autowired
   private JwtService jwtService;
   @Autowired
-  ApplicantRepository applicantRepository;
-  private String id;
+  private Base64Service base64Service;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    applicantRepository.save(
-            Applicant.builder().firstName("太郎").lastName("山田").email("xxx@example.org")
-                .phone("090-1234-5678").address("東京都渋谷区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    applicantRepository.save(
-            Applicant.builder().firstName("次郎").lastName("鈴木").email("yyy@example.org")
-                .phone("090-9876-5432").address("東京都新宿区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    applicantRepository.save(
-            Applicant.builder().firstName("三郎").lastName("佐藤").email("zzz@example.org")
-                .phone("090-1111-2222").address("東京都千代田区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    id = applicantRepository.findByEmail("xxx@example.org").block().getId();
-    jwt = jwtService.encodeApplicant(Applicant.builder().id("1").build());
-  }
-
-  @AfterEach
-  void tearDown() {
-    applicantRepository.deleteAll().block();
+    jwt = base64Service.encode(jwtService.encodeApplicant(
+        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -85,19 +66,17 @@ public class ApplicantAPITest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Applicant::getFirstName, Applicant::getLastName,
+                    .extracting(Applicant::getId, Applicant::getUuid, Applicant::getFirstName,
+                        Applicant::getLastName,
                         Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
                         Applicant::getPasswordDigest)
                     .containsExactly(
-                        tuple("三郎", "佐藤", "zzz@example.org", "090-1111-2222",
-                            "東京都千代田区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"),
-                        tuple("次郎", "鈴木", "yyy@example.org", "090-9876-5432",
-                            "東京都新宿区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"),
-                        tuple("太郎", "山田", "xxx@example.org", "090-1234-5678",
-                            "東京都渋谷区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu")
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abe"), "三郎",
+                            "佐藤", "zzz@example.org", "090-1111-2222", "東京都千代田区", null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"), "次郎",
+                            "鈴木", "yyy@example.org", "090-9876-5432", "東京都新宿区", null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
+                            "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null)
                     )
 
             );
@@ -143,19 +122,20 @@ public class ApplicantAPITest {
       void canFindById() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/applicants/%s".formatted(id))
+            .uri("/api/v1/applicants/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBody(Applicant.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Applicant::getFirstName, Applicant::getLastName,
+                    .extracting(Applicant::getId, Applicant::getUuid, Applicant::getFirstName,
+                        Applicant::getLastName,
                         Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
                         Applicant::getPasswordDigest)
-                    .containsExactly("太郎", "山田", "xxx@example.org", "090-1234-5678",
-                        "東京都渋谷区",
-                        "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
                     )
             );
       }
@@ -170,7 +150,8 @@ public class ApplicantAPITest {
       void authenticationError() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/applicants/%s".formatted(id))
+            .uri("/api/v1/applicants/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
@@ -189,6 +170,9 @@ public class ApplicantAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class Save {
 
     @Nested
@@ -214,23 +198,15 @@ public class ApplicantAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
-              Applicant applicant = jwtService.decodeApplicant(jwt);
+            .expectCookie().value("applicant-token", jwt -> {
+              Applicant applicant = jwtService.decodeApplicant(base64Service.decode(jwt));
               assertThat(applicant)
                   .extracting(Applicant::getFirstName, Applicant::getLastName,
                       Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
                       Applicant::getPasswordDigest)
                   .containsExactly("四郎", "田中", "aaa@example.org", "090-3333-4444",
                       "東京都港区", null);
-            })
-            .expectBody(Applicant.class)
-            .consumeWith(result ->
-                assertThat(result.getResponseBody())
-                    .extracting(Applicant::getFirstName, Applicant::getLastName,
-                        Applicant::getEmail, Applicant::getPhone, Applicant::getAddress)
-                    .containsExactly("四郎", "田中", "aaa@example.org", "090-3333-4444",
-                        "東京都港区")
-            );
+            });
       }
     }
   }
@@ -257,8 +233,8 @@ public class ApplicantAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
-              Applicant applicant = jwtService.decodeApplicant(jwt);
+            .expectCookie().value("applicant-token", jwt -> {
+              Applicant applicant = jwtService.decodeApplicant(base64Service.decode(jwt));
               assertThat(applicant)
                   .extracting(Applicant::getFirstName, Applicant::getLastName,
                       Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
@@ -335,6 +311,9 @@ public class ApplicantAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class DeleteById {
 
     @Nested
@@ -346,7 +325,7 @@ public class ApplicantAPITest {
       void canDeleteTheApplicant() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/applicants/1")
+            .uri("/api/v1/applicants/12345678-1234-1234-1234-123456789abc")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
@@ -363,7 +342,8 @@ public class ApplicantAPITest {
       void authenticationError() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/applicants/%s".formatted(id))
+            .uri("/api/v1/applicants/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)

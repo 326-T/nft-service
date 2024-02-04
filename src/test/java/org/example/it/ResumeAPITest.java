@@ -4,13 +4,14 @@ package org.example.it;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
+import java.util.UUID;
 import org.example.Main;
 import org.example.error.response.ErrorResponse;
+import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Resume;
-import org.example.persistence.repository.ResumeRepository;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(classes = Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -35,32 +37,14 @@ public class ResumeAPITest {
   @Autowired
   private JwtService jwtService;
   @Autowired
-  ResumeRepository resumeRepository;
-  private String id;
+  private Base64Service base64Service;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    resumeRepository.save(
-        Resume.builder().applicantId("1").education("2021年 A大学卒業")
-            .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .references("https://imageA.png").build()).block();
-    resumeRepository.save(
-        Resume.builder().applicantId("2").education("2020年 B大学卒業").experience("コンビニバイト")
-            .skills("TOEIC 900点").interests("ベンチャー企業")
-            .references("https://imageB.png").build()).block();
-    resumeRepository.save(
-        Resume.builder().applicantId("3").education("2019年 C大学卒業").experience("カフェバイト")
-            .skills("英検2級").interests("大手企業")
-            .references("https://imageC.png").build()).block();
-    id = resumeRepository.findByApplicantId("1").blockFirst().getId();
-    jwt = jwtService.encodeApplicant(Applicant.builder().id("1").build());
-  }
-
-  @AfterEach
-  void tearDown() {
-    resumeRepository.deleteAll().block();
+    jwt = base64Service.encode(jwtService.encodeApplicant(
+        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -83,15 +67,23 @@ public class ResumeAPITest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                        Resume::getSkills, Resume::getInterests, Resume::getReferences)
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation,
+                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
+                        Resume::getUrls, Resume::getPicture)
                     .containsExactly(
-                        tuple("3", "2019年 C大学卒業", "カフェバイト", "英検2級",
-                            "大手企業", "https://imageC.png"),
-                        tuple("2", "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点",
-                            "ベンチャー企業", "https://imageB.png"),
-                        tuple("1", "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                            "外資企業", "https://imageA.png")
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abe"),
+                            UUID.fromString("12345678-1234-1234-1234-123456789abe"),
+                            "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級", "外資企業",
+                            "https://imageA.png", "3.png"),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
+                            UUID.fromString("12345678-1234-1234-1234-123456789abd"),
+                            "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点", "ベンチャー企業",
+                            "https://imageB.png", "2.png"),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                            "https://imageC.png", "1.png")
                     )
 
             );
@@ -137,18 +129,21 @@ public class ResumeAPITest {
       void canFindById() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes/%s".formatted(id))
+            .uri("/api/v1/resumes/12345678-1234-1234-1234-123456789abc")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getReferences)
-                    .containsExactly("1", "2021年 A大学卒業", "居酒屋バイトリーダー",
-                        "英検1級", "外資企業", "https://imageA.png")
+                        Resume::getUrls, Resume::getPicture)
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                        "https://imageC.png", "1.png")
             );
       }
     }
@@ -162,7 +157,8 @@ public class ResumeAPITest {
       void authenticationError() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes/%s".formatted(id))
+            .uri("/api/v1/resumes/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
@@ -192,18 +188,22 @@ public class ResumeAPITest {
       void canFindByApplicantId() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes/applicant/1")
+            .uri("/api/v1/resumes/applicant")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getReferences)
-                    .containsExactly(tuple("1", "2021年 A大学卒業", "居酒屋バイトリーダー",
-                        "英検1級", "外資企業", "https://imageA.png"))
+                        Resume::getUrls, Resume::getPicture)
+                    .containsExactly(
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                            "https://imageC.png", "1.png"))
             );
       }
     }
@@ -236,6 +236,9 @@ public class ResumeAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class Save {
 
     @Nested
@@ -252,12 +255,13 @@ public class ResumeAPITest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
-                  "applicantId": "1",
+                  "applicantUuid": "12345678-1234-1234-1234-123456789abc",
                   "education": "2021年 A大学卒業",
                   "experience": "居酒屋バイトリーダー",
                   "skills": "英検1級",
                   "interests": "外資企業",
-                  "references": "https://imageA.png"
+                  "urls": "https://imageA.png",
+                  "picture": "3.png"
                 }
                 """
             )
@@ -266,17 +270,60 @@ public class ResumeAPITest {
             .expectBody(Resume.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getApplicantId, Resume::getEducation,
+                    .extracting(Resume::getId, Resume::getApplicantUuid, Resume::getEducation,
                         Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getReferences)
-                    .containsExactly("1", "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                        "外資企業", "https://imageA.png")
+                        Resume::getUrls, Resume::getPicture)
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
+                        "外資企業", "https://imageA.png", "3.png")
+            );
+      }
+    }
+
+    @Nested
+    @DisplayName("異常系")
+    class Error {
+
+      @Test
+      @DisplayName("認証エラー")
+      void authenticationError() {
+        // when, then
+        webTestClient.post()
+            .uri("/api/v1/resumes")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("""
+                {
+                  "applicantUuid": "12345678-1234-1234-1234-123456789abc",
+                  "education": "2021年 A大学卒業",
+                  "experience": "居酒屋バイトリーダー",
+                  "skills": "英検1級",
+                  "interests": "外資企業",
+                  "urls": "https://imageA.png",
+                  "picture": "3.png"
+                }
+                """
+            )
+            .exchange()
+            .expectStatus().isUnauthorized()
+            .expectBody(ErrorResponse.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
+                        ErrorResponse::getSummary, ErrorResponse::getDetail,
+                        ErrorResponse::getMessage)
+                    .containsExactly(401, null,
+                        "クライアント側の認証切れ",
+                        "org.example.error.exception.UnauthenticatedException: Authorization headerがありません。",
+                        "JWTが有効ではありません。")
             );
       }
     }
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class DeleteById {
 
     @Nested
@@ -288,7 +335,7 @@ public class ResumeAPITest {
       void canDeleteTheResume() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/resumes/1")
+            .uri("/api/v1/resumes/12345678-1234-1234-1234-123456789abc")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
@@ -305,7 +352,8 @@ public class ResumeAPITest {
       void authenticationError() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/resumes/%s".formatted(id))
+            .uri("/api/v1/resumes/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)

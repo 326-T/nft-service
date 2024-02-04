@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.util.UUID;
 import org.example.error.exception.PasswordAuthenticationException;
 import org.example.persistence.entity.Company;
 import org.example.persistence.repository.CompanyRepository;
@@ -41,13 +42,13 @@ class CompanyServiceTest {
       @DisplayName("全件取得できる")
       void canFindAll() {
         // given
-        Company company1 = Company.builder().id("1").name("A株式会社")
+        Company company1 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
-        Company company2 = Company.builder().id("2").name("B株式会社")
+        Company company2 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abd")).name("B株式会社")
             .email("yyy@example.org").phone("090-9876-5432").address("東京都新宿区")
             .passwordDigest("").build();
-        Company company3 = Company.builder().id("3").name("C株式会社")
+        Company company3 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abe")).name("C株式会社")
             .email("zzz@example.org").phone("090-1111-2222").address("東京都千代田区")
             .passwordDigest("").build();
         when(companyRepository.findAll(any(Sort.class)))
@@ -57,24 +58,24 @@ class CompanyServiceTest {
         // then
         StepVerifier.create(actual)
             .assertNext(company -> assertThat(company)
-                .extracting(Company::getId, Company::getName,
+                .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly("1", "A株式会社", "xxx@example.org", "090-1234-5678",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社", "xxx@example.org", "090-1234-5678",
                     "東京都渋谷区",
                     ""))
             .assertNext(company -> assertThat(company)
-                .extracting(Company::getId, Company::getName,
+                .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly("2", "B株式会社", "yyy@example.org", "090-9876-5432",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abd"), "B株式会社", "yyy@example.org", "090-9876-5432",
                     "東京都新宿区",
                     ""))
             .assertNext(company -> assertThat(company)
-                .extracting(Company::getId, Company::getName,
+                .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly("3", "C株式会社", "zzz@example.org", "090-1111-2222",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "C株式会社", "zzz@example.org", "090-1111-2222",
                     "東京都千代田区", ""));
       }
     }
@@ -91,19 +92,19 @@ class CompanyServiceTest {
       @DisplayName("IDで検索できる")
       void canFindById() {
         // given
-        Company company1 = Company.builder().id("1").name("A株式会社")
+        Company company1 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
-        when(companyRepository.findById("1")).thenReturn(Mono.just(company1));
+        when(companyRepository.findByUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(Mono.just(company1));
         // when
-        Mono<Company> actual = companyService.findById("1");
+        Mono<Company> actual = companyService.findByUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual)
             .assertNext(company -> assertThat(company)
-                .extracting(Company::getId, Company::getName,
+                .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly("1", "A株式会社", "xxx@example.org", "090-1234-5678",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社", "xxx@example.org", "090-1234-5678",
                     "東京都渋谷区",
                     ""))
             .verifyComplete();
@@ -122,7 +123,7 @@ class CompanyServiceTest {
       @DisplayName("emailで検索できる")
       void canFindByEmail() {
         // given
-        Company company1 = Company.builder().id("1").name("A株式会社")
+        Company company1 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
         when(companyRepository.findByEmail("xxx@example.org")).thenReturn(Mono.just(company1));
@@ -131,10 +132,10 @@ class CompanyServiceTest {
         // then
         StepVerifier.create(actual)
             .assertNext(company -> assertThat(company)
-                .extracting(Company::getId, Company::getName,
+                .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly("1", "A株式会社", "xxx@example.org", "090-1234-5678",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社", "xxx@example.org", "090-1234-5678",
                     "東京都渋谷区",
                     ""))
             .verifyComplete();
@@ -184,7 +185,7 @@ class CompanyServiceTest {
       @DisplayName("ログインできる")
       void canLogin() {
         // given
-        Company company1 = Company.builder().id("1").name("A株式会社")
+        Company company1 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("password_digest").build();
         when(companyRepository.findByEmail("xxx@example.org")).thenReturn(Mono.just(company1));
@@ -223,7 +224,7 @@ class CompanyServiceTest {
       @DisplayName("passwordが間違っている")
       void passwordIsWrong() {
         // given
-        Company company1 = Company.builder().id("1").name("A株式会社")
+        Company company1 = Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("password_digest").build();
         when(companyRepository.findByEmail("xxx@example.org")).thenReturn(Mono.just(company1));
@@ -247,9 +248,9 @@ class CompanyServiceTest {
       @DisplayName("IDで削除できる")
       void canDeleteById() {
         // given
-        when(companyRepository.deleteById("1")).thenReturn(Mono.empty());
+        when(companyRepository.deleteByUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(Mono.empty());
         // when
-        Mono<Void> actual = companyService.deleteById("1");
+        Mono<Void> actual = companyService.deleteById(UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual).verifyComplete();
       }
