@@ -31,7 +31,7 @@ public class JwtService {
         .withJWTId(UUID.randomUUID().toString())
         .withIssuer("org.example")
         .withAudience("org.example")
-        .withSubject(applicant.getId())
+        .withSubject(applicant.getUuid().toString())
         .withClaim("firstName", applicant.getFirstName())
         .withClaim("lastName", applicant.getLastName())
         .withClaim("email", applicant.getEmail())
@@ -49,7 +49,7 @@ public class JwtService {
         .withJWTId(UUID.randomUUID().toString())
         .withIssuer("org.example")
         .withAudience("org.example")
-        .withSubject(company.getId())
+        .withSubject(company.getUuid().toString())
         .withClaim("name", company.getName())
         .withClaim("email", company.getEmail())
         .withClaim("phone", company.getPhone())
@@ -64,7 +64,7 @@ public class JwtService {
       throws TokenExpiredException, SignatureVerificationException, IllegalArgumentException {
     DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey)).build().verify(jwt);
     return Applicant.builder()
-        .id(decodedJWT.getSubject())
+        .uuid(UUID.fromString(decodedJWT.getSubject()))
         .firstName(decodedJWT.getClaim("firstName").asString())
         .lastName(decodedJWT.getClaim("lastName").asString())
         .email(decodedJWT.getClaim("email").asString())
@@ -77,7 +77,7 @@ public class JwtService {
       throws TokenExpiredException, SignatureVerificationException, IllegalArgumentException {
     DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey)).build().verify(jwt);
     return Company.builder()
-        .id(decodedJWT.getSubject())
+        .uuid(UUID.fromString(decodedJWT.getSubject()))
         .name(decodedJWT.getClaim("name").asString())
         .email(decodedJWT.getClaim("email").asString())
         .phone(decodedJWT.getClaim("phone").asString())

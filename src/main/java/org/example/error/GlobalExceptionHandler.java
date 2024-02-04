@@ -68,7 +68,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
     response.getHeaders().setAccessControlAllowOrigin("*");
     response.getHeaders().setAccessControlAllowHeaders(List.of("*"));
     response.getHeaders().setAccessControlAllowMethods(List.of(
-        HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.OPTIONS));
+        HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.OPTIONS));
     response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
     Flux<DataBuffer> buffer = Mono.just(body)
         .flatMap(this::writeValueAsBytes)

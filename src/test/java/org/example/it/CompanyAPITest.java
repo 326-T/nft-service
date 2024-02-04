@@ -4,12 +4,14 @@ package org.example.it;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
+import java.util.UUID;
 import org.example.Main;
 import org.example.error.response.ErrorResponse;
+import org.example.listener.FlywayTestExecutionListener;
+import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Company;
-import org.example.persistence.repository.CompanyRepository;
+import org.example.service.Base64Service;
 import org.example.service.JwtService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(classes = Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -34,35 +37,14 @@ public class CompanyAPITest {
   @Autowired
   private JwtService jwtService;
   @Autowired
-  CompanyRepository companyRepository;
-  private String id;
+  private Base64Service base64Service;
   private String jwt;
 
 
   @BeforeEach
   void setUp() {
-    companyRepository.save(
-            Company.builder().name("A株式会社").email("xxx@example.org")
-                .phone("090-1234-5678").address("東京都渋谷区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    companyRepository.save(
-            Company.builder().name("B株式会社").email("yyy@example.org")
-                .phone("090-9876-5432").address("東京都新宿区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    companyRepository.save(
-            Company.builder().name("C株式会社").email("zzz@example.org")
-                .phone("090-1111-2222").address("東京都千代田区")
-                .passwordDigest("$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu").build())
-        .block();
-    id = companyRepository.findByEmail("xxx@example.org").block().getId();
-    jwt = jwtService.encodeCompany(Company.builder().id("1").build());
-  }
-
-  @AfterEach
-  void tearDown() {
-    companyRepository.deleteAll().block();
+    jwt = base64Service.encode(jwtService.encodeApplicant(
+        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -85,19 +67,17 @@ public class CompanyAPITest {
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getName,
+                    .extracting(Company::getId, Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
                     .containsExactly(
-                        tuple("C株式会社", "zzz@example.org", "090-1111-2222",
-                            "東京都千代田区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"),
-                        tuple("B株式会社", "yyy@example.org", "090-9876-5432",
-                            "東京都新宿区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"),
-                        tuple("A株式会社", "xxx@example.org", "090-1234-5678",
-                            "東京都渋谷区",
-                            "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu")
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abe"),
+                            "C株式会社", "zzz@example.org", "090-1111-2222", "東京都千代田区",
+                            null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abd"),
+                            "B株式会社", "yyy@example.org", "090-9876-5432", "東京都新宿区", null),
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            "A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null)
                     )
 
             );
@@ -143,19 +123,19 @@ public class CompanyAPITest {
       void canFindById() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/companies/%s".formatted(id))
+            .uri("/api/v1/companies/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBody(Company.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Company::getName,
+                    .extracting(Company::getId, Company::getUuid, Company::getName,
                         Company::getEmail, Company::getPhone, Company::getAddress,
                         Company::getPasswordDigest)
-                    .containsExactly("A株式会社", "xxx@example.org", "090-1234-5678",
-                        "東京都渋谷区",
-                        "$2a$10$d3K9jDtqZ3Hi44S6ByqUxuZszfQuCNHSob2Cl/k2ZoIReIcTSldUu"
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
                     )
             );
       }
@@ -170,7 +150,8 @@ public class CompanyAPITest {
       void authenticationError() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/companies/%s".formatted(id))
+            .uri("/api/v1/companies/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
@@ -189,6 +170,9 @@ public class CompanyAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class Save {
 
     @Nested
@@ -213,23 +197,15 @@ public class CompanyAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
-              Company company = jwtService.decodeCompany(jwt);
+            .expectCookie().value("company-token", jwt -> {
+              Company company = jwtService.decodeCompany(base64Service.decode(jwt));
               assertThat(company)
                   .extracting(Company::getName,
                       Company::getEmail, Company::getPhone, Company::getAddress,
                       Company::getPasswordDigest)
                   .containsExactly("D株式会社", "aaa@example.org", "090-3333-4444",
                       "東京都港区", null);
-            })
-            .expectBody(Company.class)
-            .consumeWith(result ->
-                assertThat(result.getResponseBody())
-                    .extracting(Company::getName,
-                        Company::getEmail, Company::getPhone, Company::getAddress)
-                    .containsExactly("D株式会社", "aaa@example.org", "090-3333-4444",
-                        "東京都港区")
-            );
+            });
       }
     }
   }
@@ -256,8 +232,8 @@ public class CompanyAPITest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().value("token", jwt -> {
-              Company company = jwtService.decodeCompany(jwt);
+            .expectCookie().value("company-token", jwt -> {
+              Company company = jwtService.decodeCompany(base64Service.decode(jwt));
               assertThat(company)
                   .extracting(Company::getName,
                       Company::getEmail, Company::getPhone, Company::getAddress,
@@ -334,6 +310,9 @@ public class CompanyAPITest {
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class DeleteById {
 
     @Nested
@@ -345,7 +324,7 @@ public class CompanyAPITest {
       void canDeleteTheCompany() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/companies/1")
+            .uri("/api/v1/companies/12345678-1234-1234-1234-123456789abc")
             .cookie("token", jwt)
             .exchange()
             .expectStatus().isOk()
@@ -362,7 +341,8 @@ public class CompanyAPITest {
       void authenticationError() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/companies/%s".formatted(id))
+            .uri("/api/v1/companies/%s".formatted(
+                UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
