@@ -6,6 +6,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.UUID;
 import org.example.Main;
+import org.example.constant.CookieKeys;
 import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
@@ -43,8 +44,8 @@ public class CompanyAPITest {
 
   @BeforeEach
   void setUp() {
-    jwt = base64Service.encode(jwtService.encodeApplicant(
-        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
+    jwt = base64Service.encode(jwtService.encodeCompany(
+        Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -60,7 +61,7 @@ public class CompanyAPITest {
         // when, then
         webTestClient.get()
             .uri("/api/v1/companies")
-            .cookie("token", jwt)
+            .cookie(CookieKeys.COMPANY_TOKEN, jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBodyList(Company.class)
@@ -104,7 +105,7 @@ public class CompanyAPITest {
                         ErrorResponse::getMessage)
                     .containsExactly(401, null,
                         "クライアント側の認証切れ",
-                        "org.example.error.exception.UnauthenticatedException: Authorization headerがありません。",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
                         "JWTが有効ではありません。")
             );
       }
@@ -125,7 +126,7 @@ public class CompanyAPITest {
         webTestClient.get()
             .uri("/api/v1/companies/%s".formatted(
                 UUID.fromString("12345678-1234-1234-1234-123456789abc")))
-            .cookie("token", jwt)
+            .cookie(CookieKeys.COMPANY_TOKEN, jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBody(Company.class)
@@ -162,7 +163,7 @@ public class CompanyAPITest {
                         ErrorResponse::getMessage)
                     .containsExactly(401, null,
                         "クライアント側の認証切れ",
-                        "org.example.error.exception.UnauthenticatedException: Authorization headerがありません。",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
                         "JWTが有効ではありません。")
             );
       }
@@ -325,7 +326,7 @@ public class CompanyAPITest {
         // when, then
         webTestClient.delete()
             .uri("/api/v1/companies/12345678-1234-1234-1234-123456789abc")
-            .cookie("token", jwt)
+            .cookie(CookieKeys.COMPANY_TOKEN, jwt)
             .exchange()
             .expectStatus().isOk()
             .expectBody().isEmpty();
@@ -353,7 +354,7 @@ public class CompanyAPITest {
                         ErrorResponse::getMessage)
                     .containsExactly(401, null,
                         "クライアント側の認証切れ",
-                        "org.example.error.exception.UnauthenticatedException: Authorization headerがありません。",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
                         "JWTが有効ではありません。")
             );
       }

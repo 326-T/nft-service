@@ -1,18 +1,16 @@
 package org.example.web.filter;
 
-import io.netty.util.internal.StringUtil;
-import java.util.Arrays;
 import java.util.Objects;
 import lombok.NonNull;
-import org.example.config.AuthConfig;
 import org.example.constant.ContextKeys;
-import org.example.error.exception.UnauthenticatedException;
+import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Applicant;
+import org.example.persistence.entity.Company;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
+import org.example.service.ReactiveContextService;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpCookie;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -25,13 +23,13 @@ public class AuthenticationWebFilter implements WebFilter {
 
   private final JwtService jwtService;
   private final Base64Service base64Service;
-  private final AuthConfig authConfig;
+  private final ReactiveContextService reactiveContextService;
 
   public AuthenticationWebFilter(JwtService jwtService, Base64Service base64Service,
-      AuthConfig authConfig) {
+      ReactiveContextService reactiveContextService) {
     this.jwtService = jwtService;
     this.base64Service = base64Service;
-    this.authConfig = authConfig;
+    this.reactiveContextService = reactiveContextService;
   }
 
   /**
@@ -47,36 +45,22 @@ public class AuthenticationWebFilter implements WebFilter {
   @Override
   @NonNull
   public Mono<Void> filter(ServerWebExchange exchange, @NonNull WebFilterChain chain) {
-    if (HttpMethod.OPTIONS.equals(exchange.getRequest().getMethod())) {
-      return chain.filter(exchange);
-    }
-    if (Arrays.stream(authConfig.getNonAuthPaths())
-        .anyMatch(
-            p -> Objects.equals(p.getMethod(), exchange.getRequest().getMethod().toString()) &&
-                Objects.equals(p.getPath(), exchange.getRequest().getPath().toString()))) {
-      return chain.filter(exchange);
-    }
-    HttpCookie cookie = exchange.getRequest().getCookies().getFirst("token");
-    if (Objects.isNull(cookie) || StringUtil.isNullOrEmpty(cookie.getValue())) {
-      return Mono.error(new UnauthenticatedException("Authorization headerがありません。"));
-    }
-    return Mono.just(cookie.getValue())
-        .flatMap(this::jwtChain)
-        .doOnNext(a -> exchange.getAttributes().put(ContextKeys.APPLICANT_KEY, a))
-        .then(chain.filter(exchange));
-  }
-
-  /**
-   * JWT認証の場合
-   *
-   * @param token JWT認証のトークン
-   *
-   * @return 認証されたユーザー
-   */
-  private Mono<Applicant> jwtChain(String token) {
-    return Mono.just(token)
+    Mono<Applicant> applicantMono = Mono.justOrEmpty(
+            exchange.getRequest().getCookies().getFirst(CookieKeys.APPLICANT_TOKEN))
+        .filter(Objects::nonNull)
+        .map(HttpCookie::getValue)
         .map(base64Service::decode)
-        .map(jwtService::decodeApplicant)
-        .switchIfEmpty(Mono.error(new UnauthenticatedException("存在しないユーザです。")));
+        .map(jwtService::decodeApplicant);
+    Mono<Company> companyMono = Mono.justOrEmpty(
+            exchange.getRequest().getCookies().getFirst(CookieKeys.COMPANY_TOKEN))
+        .filter(Objects::nonNull)
+        .map(HttpCookie::getValue)
+        .map(base64Service::decode)
+        .map(jwtService::decodeCompany);
+    return applicantMono
+        .doOnNext(a -> reactiveContextService.setAttribute(exchange, ContextKeys.APPLICANT_KEY, a))
+        .then(companyMono)
+        .doOnNext(c -> reactiveContextService.setAttribute(exchange, ContextKeys.COMPANY_KEY, c))
+        .then(chain.filter(exchange));
   }
 }
