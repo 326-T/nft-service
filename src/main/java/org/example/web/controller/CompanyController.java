@@ -1,11 +1,13 @@
 package org.example.web.controller;
 
 import java.util.UUID;
+import org.example.constant.ContextKeys;
 import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Company;
 import org.example.service.Base64Service;
 import org.example.service.CompanyService;
 import org.example.service.JwtService;
+import org.example.service.ReactiveContextService;
 import org.example.web.request.CompanyInsertRequest;
 import org.example.web.request.CompanyLoginRequest;
 import org.example.web.response.CompanyResponse;
@@ -29,13 +31,15 @@ public class CompanyController {
   private final CompanyService companyService;
   private final JwtService jwtService;
   private final Base64Service base64Service;
+  private final ReactiveContextService reactiveContextService;
 
 
   public CompanyController(CompanyService companyService, JwtService jwtService,
-      Base64Service base64Service) {
+      Base64Service base64Service, ReactiveContextService reactiveContextService) {
     this.companyService = companyService;
     this.jwtService = jwtService;
     this.base64Service = base64Service;
+    this.reactiveContextService = reactiveContextService;
   }
 
   @GetMapping
@@ -46,6 +50,12 @@ public class CompanyController {
   @GetMapping("/{id}")
   public Mono<CompanyResponse> findByUuid(@PathVariable UUID id) {
     return companyService.findByUuid(id).map(CompanyResponse::new);
+  }
+
+  @GetMapping("/current")
+  public Mono<CompanyResponse> current(ServerWebExchange exchange) {
+    Company company = reactiveContextService.getAttribute(exchange, ContextKeys.COMPANY_KEY);
+    return Mono.just(company).map(CompanyResponse::new);
   }
 
   @PostMapping

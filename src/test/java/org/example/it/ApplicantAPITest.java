@@ -44,7 +44,10 @@ public class ApplicantAPITest {
   @BeforeEach
   void setUp() {
     jwt = base64Service.encode(jwtService.encodeApplicant(
-        Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
+        Applicant.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .firstName("太郎").lastName("山田").email("xxx@example.org")
+            .phone("090-1234-5678").address("東京都渋谷区").build()));
   }
 
   @Nested
@@ -153,6 +156,63 @@ public class ApplicantAPITest {
         webTestClient.get()
             .uri("/api/v1/applicants/%s".formatted(
                 UUID.fromString("12345678-1234-1234-1234-123456789abc")))
+            .exchange()
+            .expectStatus().isUnauthorized()
+            .expectBody(ErrorResponse.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
+                        ErrorResponse::getSummary, ErrorResponse::getDetail,
+                        ErrorResponse::getMessage)
+                    .containsExactly(401, null,
+                        "クライアント側の認証切れ",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
+                        "JWTが有効ではありません。")
+            );
+      }
+    }
+  }
+
+  @Nested
+  class Current {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("ログイン中の応募者を取得できる")
+      void canGetCurrentApplicant() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/applicants/current")
+            .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(Applicant.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(Applicant::getId, Applicant::getUuid, Applicant::getFirstName,
+                        Applicant::getLastName,
+                        Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
+                        Applicant::getPasswordDigest)
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
+                    )
+            );
+      }
+    }
+
+    @Nested
+    @DisplayName("異常系")
+    class Error {
+
+      @Test
+      @DisplayName("認証エラー")
+      void authenticationError() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/applicants/current")
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
