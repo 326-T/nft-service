@@ -1,10 +1,13 @@
 package org.example.constant;
 
-public class ContextKeys {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-  public static final String APPLICANT_KEY = "Applicant";
-  public static final String COMPANY_KEY = "Company";
+@Getter
+@AllArgsConstructor
+public enum ContextKeys {
+  APPLICANT_KEY("applicant"),
+  COMPANY_KEY("company");
 
-  private ContextKeys() {
-  }
+  private final String key;
 }

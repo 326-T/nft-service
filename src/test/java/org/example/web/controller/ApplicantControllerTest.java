@@ -7,11 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.example.web.filter.AuthenticationWebFilter;
+import org.example.web.filter.AuthorizationWebFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,7 @@ import reactor.core.publisher.Mono;
 @WebFluxTest(
     controllers = ApplicantController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-        classes = {AuthenticationWebFilter.class})})
+        classes = {AuthenticationWebFilter.class, AuthorizationWebFilter.class})})
 @AutoConfigureWebTestClient
 class ApplicantControllerTest {
 
@@ -175,7 +177,7 @@ class ApplicantControllerTest {
             )
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("applicant-token", "base64");
+            .expectCookie().valueEquals(CookieKeys.APPLICANT_TOKEN, "base64");
       }
     }
   }
@@ -211,7 +213,7 @@ class ApplicantControllerTest {
                 """)
             .exchange()
             .expectStatus().isOk()
-            .expectCookie().valueEquals("applicant-token", "base64");
+            .expectCookie().valueEquals(CookieKeys.APPLICANT_TOKEN, "base64");
       }
     }
   }

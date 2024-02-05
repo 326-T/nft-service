@@ -1,6 +1,7 @@
 package org.example.web.controller;
 
 import java.util.UUID;
+import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Company;
 import org.example.service.Base64Service;
 import org.example.service.CompanyService;
@@ -54,7 +55,7 @@ public class CompanyController {
         .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse().addCookie(
             ResponseCookie
-                .from("company-token", jwt)
+                .from(CookieKeys.COMPANY_TOKEN, jwt)
                 .path("/")
                 .httpOnly(true)
                 .build()))
@@ -75,7 +76,8 @@ public class CompanyController {
         .map(jwtService::encodeCompany)
         .map(base64Service::encode)
         .doOnNext(jwt -> exchange.getResponse()
-            .addCookie(ResponseCookie.from("company-token", jwt).path("/").httpOnly(true).build()))
+            .addCookie(ResponseCookie.from(CookieKeys.COMPANY_TOKEN, jwt).path("/").httpOnly(true)
+                .build()))
         .then();
   }
 
