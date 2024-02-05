@@ -1,6 +1,7 @@
 package org.example.web.controller;
 
 import java.util.UUID;
+import org.example.constant.ContextKeys;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Resume;
 import org.example.service.ReactiveContextService;
@@ -45,7 +46,7 @@ public class ResumeController {
 
   @GetMapping("/applicant")
   public Flux<ResumeResponse> findByApplicantId(ServerWebExchange exchange) {
-    Applicant applicant = reactiveContextService.getCurrentApplicant(exchange);
+    Applicant applicant = reactiveContextService.getAttribute(exchange, ContextKeys.APPLICANT_KEY);
     UUID uuid = applicant.getUuid();
     return resumeService.findByApplicantId(uuid).map(ResumeResponse::new);
   }
@@ -54,7 +55,8 @@ public class ResumeController {
   public Mono<ResumeResponse> save(ServerWebExchange exchange,
       @RequestBody ResumeInsertRequest request) {
     Resume resume = request.exportEntity();
-    UUID uuid = reactiveContextService.getCurrentApplicant(exchange).getUuid();
+    Applicant applicant = reactiveContextService.getAttribute(exchange, ContextKeys.APPLICANT_KEY);
+    UUID uuid = applicant.getUuid();
     resume.setApplicantUuid(uuid);
     return resumeService.insert(resume).map(ResumeResponse::new);
   }
