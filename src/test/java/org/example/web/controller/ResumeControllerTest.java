@@ -6,12 +6,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.example.constant.ContextKeys;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Resume;
 import org.example.service.JwtService;
 import org.example.service.ReactiveContextService;
 import org.example.service.ResumeService;
 import org.example.web.filter.AuthenticationWebFilter;
+import org.example.web.filter.AuthorizationWebFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,7 +32,7 @@ import reactor.core.publisher.Mono;
 @WebFluxTest(
     controllers = ResumeController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-        classes = {AuthenticationWebFilter.class})})
+        classes = {AuthenticationWebFilter.class, AuthorizationWebFilter.class})})
 @AutoConfigureWebTestClient
 class ResumeControllerTest {
 
@@ -168,7 +170,8 @@ class ResumeControllerTest {
         when(resumeService.findByApplicantId(
             UUID.fromString("12345678-1234-1234-1234-123456789abc"))).thenReturn(
             Flux.just(resume1));
-        when(reactiveContextService.getCurrentApplicant(any(ServerWebExchange.class)))
+        when(reactiveContextService.getAttribute(any(ServerWebExchange.class),
+            any(ContextKeys.class)))
             .thenReturn(
                 Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
                     .build());
@@ -213,7 +216,8 @@ class ResumeControllerTest {
             .urls("https://imageA.png").picture("3.png").build();
         when(resumeService.insert(any(Resume.class)))
             .thenReturn(Mono.just(resume1));
-        when(reactiveContextService.getCurrentApplicant(any(ServerWebExchange.class)))
+        when(reactiveContextService.getAttribute(any(ServerWebExchange.class),
+            any(ContextKeys.class)))
             .thenReturn(
                 Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
                     .build());
