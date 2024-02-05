@@ -7,11 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.example.constant.ContextKeys;
 import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Company;
 import org.example.service.Base64Service;
 import org.example.service.CompanyService;
 import org.example.service.JwtService;
+import org.example.service.ReactiveContextService;
 import org.example.web.filter.AuthenticationWebFilter;
 import org.example.web.filter.AuthorizationWebFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +43,8 @@ class CompanyControllerTest {
   private JwtService jwtService;
   @MockBean
   private Base64Service base64Service;
+  @MockBean
+  private ReactiveContextService reactiveContextService;
   @Autowired
   private WebTestClient webTestClient;
 
@@ -117,6 +121,42 @@ class CompanyControllerTest {
         // when, then
         webTestClient.get()
             .uri("/api/v1/companies/12345678-1234-1234-1234-123456789abc")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(Company.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(Company::getId, Company::getUuid, Company::getName,
+                        Company::getEmail, Company::getPhone, Company::getAddress,
+                        Company::getPasswordDigest)
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
+                    )
+            );
+      }
+    }
+  }
+
+  @Nested
+  class Current {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("ログイン中の企業を取得できる")
+      void canGetCurrentCompany() {
+        // given
+        Company applicant1 = Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).name("A株式会社")
+            .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
+            .passwordDigest("").build();
+        when(reactiveContextService.getAttribute(any(), any(ContextKeys.class)))
+            .thenReturn(applicant1);
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/companies/current")
             .exchange()
             .expectStatus().isOk()
             .expectBody(Company.class)

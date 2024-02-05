@@ -12,6 +12,7 @@ import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
+import org.example.service.ReactiveContextService;
 import org.example.web.filter.AuthenticationWebFilter;
 import org.example.web.filter.AuthorizationWebFilter;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +42,8 @@ class ApplicantControllerTest {
   private JwtService jwtService;
   @MockBean
   private Base64Service base64Service;
+  @MockBean
+  private ReactiveContextService reactiveContextService;
   @Autowired
   private WebTestClient webTestClient;
 
@@ -123,6 +126,42 @@ class ApplicantControllerTest {
         // when, then
         webTestClient.get()
             .uri("/api/v1/applicants/12345678-1234-1234-1234-123456789abc")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(Applicant.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(Applicant::getId, Applicant::getUuid, Applicant::getFirstName,
+                        Applicant::getLastName,
+                        Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
+                        Applicant::getPasswordDigest)
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
+                    )
+            );
+      }
+    }
+  }
+
+  @Nested
+  class Current {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("ログイン中の応募者を取得できる")
+      void canGetCurrentApplicant() {
+        // given
+        Applicant applicant1 = Applicant.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).firstName("太郎")
+            .lastName("山田").email("xxx@example.org").phone("090-1234-5678")
+            .address("東京都渋谷区").passwordDigest("").build();
+        when(reactiveContextService.getAttribute(any(), any())).thenReturn(applicant1);
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/applicants/current")
             .exchange()
             .expectStatus().isOk()
             .expectBody(Applicant.class)
