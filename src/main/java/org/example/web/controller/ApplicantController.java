@@ -1,11 +1,13 @@
 package org.example.web.controller;
 
 import java.util.UUID;
+import org.example.constant.ContextKeys;
 import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
+import org.example.service.ReactiveContextService;
 import org.example.web.request.ApplicantInsertRequest;
 import org.example.web.request.ApplicantLoginRequest;
 import org.example.web.response.ApplicantResponse;
@@ -29,12 +31,14 @@ public class ApplicantController {
   private final ApplicantService applicantService;
   private final JwtService jwtService;
   private final Base64Service base64Service;
+  private final ReactiveContextService reactiveContextService;
 
   public ApplicantController(ApplicantService applicantService, JwtService jwtService,
-      Base64Service base64Service) {
+      Base64Service base64Service, ReactiveContextService reactiveContextService) {
     this.applicantService = applicantService;
     this.jwtService = jwtService;
     this.base64Service = base64Service;
+    this.reactiveContextService = reactiveContextService;
   }
 
   @GetMapping
@@ -45,6 +49,12 @@ public class ApplicantController {
   @GetMapping("/{id}")
   public Mono<ApplicantResponse> findByUuid(@PathVariable UUID id) {
     return applicantService.findByUuid(id).map(ApplicantResponse::new);
+  }
+
+  @GetMapping("/current")
+  public Mono<ApplicantResponse> current(ServerWebExchange exchange) {
+    Applicant applicant = reactiveContextService.getAttribute(exchange, ContextKeys.APPLICANT_KEY);
+    return Mono.just(applicant).map(ApplicantResponse::new);
   }
 
   @PostMapping
