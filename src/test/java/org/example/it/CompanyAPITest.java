@@ -9,7 +9,6 @@ import org.example.Main;
 import org.example.constant.CookieKeys;
 import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
-import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Company;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
@@ -45,7 +44,9 @@ public class CompanyAPITest {
   @BeforeEach
   void setUp() {
     jwt = base64Service.encode(jwtService.encodeCompany(
-        Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
+        Company.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .name("A株式会社").email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区").build()));
   }
 
   @Nested
@@ -153,6 +154,62 @@ public class CompanyAPITest {
         webTestClient.get()
             .uri("/api/v1/companies/%s".formatted(
                 UUID.fromString("12345678-1234-1234-1234-123456789abc")))
+            .exchange()
+            .expectStatus().isUnauthorized()
+            .expectBody(ErrorResponse.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
+                        ErrorResponse::getSummary, ErrorResponse::getDetail,
+                        ErrorResponse::getMessage)
+                    .containsExactly(401, null,
+                        "クライアント側の認証切れ",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
+                        "JWTが有効ではありません。")
+            );
+      }
+    }
+  }
+
+  @Nested
+  class Current {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("ログイン中の企業を取得できる")
+      void canGetCurrentCompany() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/companies/current")
+            .cookie(CookieKeys.COMPANY_TOKEN, jwt)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(Company.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(Company::getId, Company::getUuid, Company::getName,
+                        Company::getEmail, Company::getPhone, Company::getAddress,
+                        Company::getPasswordDigest)
+                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区", null
+                    )
+            );
+      }
+    }
+
+    @Nested
+    @DisplayName("異常系")
+    class Error {
+
+      @Test
+      @DisplayName("認証エラー")
+      void authenticationError() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/companies/current")
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
