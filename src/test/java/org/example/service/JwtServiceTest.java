@@ -2,6 +2,7 @@ package org.example.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -12,6 +13,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import org.example.config.JwtConfig;
 import org.example.persistence.entity.Applicant;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -29,12 +32,13 @@ class JwtServiceTest {
 
   @InjectMocks
   private JwtService jwtService;
-
+  @Mock
+private JwtConfig jwtConfig;
 
   @BeforeAll
   void beforeAll() {
-    ReflectionTestUtils.setField(jwtService, "secretKey", "secret");
-    ReflectionTestUtils.setField(jwtService, "ttl", 1000L);
+    when(jwtConfig.getTtl()).thenReturn(1000L);
+    when(jwtConfig.getSecretKey()).thenReturn("secret");
   }
 
   @Nested

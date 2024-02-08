@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.example.config.JwtConfig;
 import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Applicant;
 import org.example.service.ApplicantService;
@@ -15,6 +16,7 @@ import org.example.service.JwtService;
 import org.example.service.ReactiveContextService;
 import org.example.web.filter.AuthenticationWebFilter;
 import org.example.web.filter.AuthorizationWebFilter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -44,8 +46,16 @@ class ApplicantControllerTest {
   private Base64Service base64Service;
   @MockBean
   private ReactiveContextService reactiveContextService;
+  @MockBean
+  private JwtConfig jwtConfig;
   @Autowired
   private WebTestClient webTestClient;
+
+  @BeforeEach
+  void setUp() {
+    when(jwtConfig.getTtl()).thenReturn(3600000L);
+    when(jwtConfig.getSecretKey()).thenReturn("secret");
+  }
 
   @Nested
   class Index {
