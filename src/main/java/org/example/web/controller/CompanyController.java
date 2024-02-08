@@ -82,7 +82,7 @@ public class CompanyController {
       @RequestBody CompanyInsertRequest request) {
     Company company = request.exportEntity();
     company.setUuid(id);
-    return companyService.update(request.exportEntity()).map(CompanyResponse::new);
+    return companyService.update(company).map(CompanyResponse::new);
   }
 
   @PostMapping("/login")
