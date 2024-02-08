@@ -1,6 +1,7 @@
 package org.example.web.controller;
 
 import java.util.UUID;
+import org.example.config.JwtConfig;
 import org.example.constant.ContextKeys;
 import org.example.constant.CookieKeys;
 import org.example.persistence.entity.Applicant;
@@ -32,13 +33,16 @@ public class ApplicantController {
   private final JwtService jwtService;
   private final Base64Service base64Service;
   private final ReactiveContextService reactiveContextService;
+  private final JwtConfig jwtConfig;
 
   public ApplicantController(ApplicantService applicantService, JwtService jwtService,
-      Base64Service base64Service, ReactiveContextService reactiveContextService) {
+      Base64Service base64Service, ReactiveContextService reactiveContextService,
+      JwtConfig jwtConfig) {
     this.applicantService = applicantService;
     this.jwtService = jwtService;
     this.base64Service = base64Service;
     this.reactiveContextService = reactiveContextService;
+    this.jwtConfig = jwtConfig;
   }
 
   @GetMapping
@@ -67,6 +71,7 @@ public class ApplicantController {
                 .from(CookieKeys.APPLICANT_TOKEN, jwt)
                 .path("/")
                 .httpOnly(true)
+                .maxAge(jwtConfig.getTtl() / 1000)
                 .build()))
         .then();
   }
@@ -84,8 +89,12 @@ public class ApplicantController {
     return applicantService.login(request.getEmail(), request.getPassword())
         .map(jwtService::encodeApplicant)
         .map(base64Service::encode)
-        .doOnNext(jwt -> exchange.getResponse()
-            .addCookie(ResponseCookie.from(CookieKeys.APPLICANT_TOKEN, jwt).path("/").httpOnly(true)
+        .doOnNext(jwt -> exchange.getResponse().addCookie(
+            ResponseCookie
+                .from(CookieKeys.APPLICANT_TOKEN, jwt)
+                .path("/")
+                .httpOnly(true)
+                .maxAge(jwtConfig.getTtl() / 1000)
                 .build()))
         .then();
   }
