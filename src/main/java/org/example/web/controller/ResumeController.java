@@ -66,7 +66,7 @@ public class ResumeController {
       @RequestBody ResumeUpdateRequest request) {
     Resume resume = request.exportEntity();
     resume.setUuid(id);
-    return resumeService.update(request.exportEntity()).map(ResumeResponse::new);
+    return resumeService.update(resume).map(ResumeResponse::new);
   }
 
   @DeleteMapping("/{id}")

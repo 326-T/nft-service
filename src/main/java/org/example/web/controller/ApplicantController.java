@@ -81,7 +81,7 @@ public class ApplicantController {
       @RequestBody ApplicantInsertRequest request) {
     Applicant applicant = request.exportEntity();
     applicant.setUuid(id);
-    return applicantService.update(request.exportEntity()).map(ApplicantResponse::new);
+    return applicantService.update(applicant).map(ApplicantResponse::new);
   }
 
   @PostMapping("/login")
