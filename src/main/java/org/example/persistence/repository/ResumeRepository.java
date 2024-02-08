@@ -16,7 +16,7 @@ public interface ResumeRepository extends ReactiveCrudRepository<Resume, String>
   Flux<Resume> findAll(Sort sort);
 
   @NonNull
-  Mono<Resume> findByUuid(@NonNull UUID id);
+  Mono<Resume> findByUuid(UUID uuid);
 
   Flux<Resume> findByApplicantUuid(UUID applicantUuid);
 
