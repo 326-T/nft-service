@@ -227,7 +227,6 @@ class ResumeControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
-                  "applicantId": "12345678-1234-1234-1234-123456789abc",
                   "education": "2021年 A大学卒業",
                   "experience": "居酒屋バイトリーダー",
                   "skills": "英検1級",
