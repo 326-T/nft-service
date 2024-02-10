@@ -10,7 +10,8 @@ import org.example.constant.CookieKeys;
 import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
-import org.example.persistence.entity.Resume;
+import org.example.persistence.entity.Company;
+import org.example.persistence.entity.Offer;
 import org.example.service.Base64Service;
 import org.example.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureWebClient
-public class ResumeAPITest {
+public class OfferAPITest {
 
   @Autowired
   private WebTestClient webTestClient;
@@ -40,12 +41,15 @@ public class ResumeAPITest {
   @Autowired
   private Base64Service base64Service;
   private String jwt;
+  private String companyJwt;
 
 
   @BeforeEach
   void setUp() {
     jwt = base64Service.encode(jwtService.encodeApplicant(
         Applicant.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
+    companyJwt = base64Service.encode(jwtService.encodeCompany(
+        Company.builder().uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).build()));
   }
 
   @Nested
@@ -56,35 +60,33 @@ public class ResumeAPITest {
     class Regular {
 
       @Test
-      @DisplayName("応募者を全件取得できる")
-      void findAllTheResumes() {
+      @DisplayName("オファーを全件取得できる")
+      void findAllTheOffers() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes")
+            .uri("/api/v1/offers")
             .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
             .exchange()
             .expectStatus().isOk()
-            .expectBodyList(Resume.class)
+            .expectBodyList(Offer.class)
             .hasSize(3)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
-                        Resume::getEducation,
-                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls, Resume::getPicture)
+                    .extracting(Offer::getUuid, Offer::getResumeUuid, Offer::getCompanyUuid,
+                        Offer::getPrice, Offer::getMessage, Offer::getStatusId)
                     .containsExactly(
-                        tuple(null, UUID.fromString("12345678-1234-5678-1234-123456789abe"),
+                        tuple(UUID.fromString("12345678-1234-5678-1234-123456789abe"),
+                            UUID.fromString("12345678-1234-5678-1234-123456789abe"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abe"),
-                            "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級", "外資企業",
-                            "https://imageA.png", "3.png"),
-                        tuple(null, UUID.fromString("12345678-1234-5678-1234-123456789abd"),
+                            0.01F, "よろしくお願いします。", 0),
+                        tuple(UUID.fromString("12345678-1234-5678-1234-123456789abd"),
+                            UUID.fromString("12345678-1234-5678-1234-123456789abd"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abd"),
-                            "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点", "ベンチャー企業",
-                            "https://imageB.png", "2.png"),
-                        tuple(null, UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                            0.01F, "よろしくお願いします。", 0),
+                        tuple(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                            UUID.fromString("12345678-1234-5678-1234-123456789abc"),
                             UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                            "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                            "https://imageC.png", "1.png")
+                            0.01F, "よろしくお願いします。", 0)
                     )
 
             );
@@ -100,7 +102,7 @@ public class ResumeAPITest {
       void authenticationError() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes")
+            .uri("/api/v1/offers")
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
@@ -130,22 +132,19 @@ public class ResumeAPITest {
       void canFindById() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes/12345678-1234-5678-1234-123456789abc")
+            .uri("/api/v1/offers/12345678-1234-5678-1234-123456789abc")
             .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
             .exchange()
             .expectStatus().isOk()
-            .expectBody(Resume.class)
+            .expectBody(Offer.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
-                        Resume::getEducation,
-                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls, Resume::getPicture)
-                    .containsExactly(null, UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                    .extracting(Offer::getUuid, Offer::getResumeUuid, Offer::getCompanyUuid,
+                        Offer::getPrice, Offer::getMessage, Offer::getStatusId)
+                    .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                        UUID.fromString("12345678-1234-5678-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                        "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                        "https://imageC.png", "1.png")
-            );
+                        0.01F, "よろしくお願いします。", 0));
       }
     }
 
@@ -158,67 +157,8 @@ public class ResumeAPITest {
       void authenticationError() {
         // when, then
         webTestClient.get()
-            .uri("/api/v1/resumes/%s".formatted(
+            .uri("/api/v1/offers/%s".formatted(
                 UUID.fromString("12345678-1234-1234-1234-123456789abc")))
-            .exchange()
-            .expectStatus().isUnauthorized()
-            .expectBody(ErrorResponse.class)
-            .consumeWith(result ->
-                assertThat(result.getResponseBody())
-                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
-                        ErrorResponse::getSummary, ErrorResponse::getDetail,
-                        ErrorResponse::getMessage)
-                    .containsExactly(401, null,
-                        "クライアント側の認証切れ",
-                        "org.example.error.exception.ForbiddenException: 認可されていません。",
-                        "JWTが有効ではありません。")
-            );
-      }
-    }
-  }
-
-  @Nested
-  class FindByApplicantId {
-
-    @Nested
-    @DisplayName("正常系")
-    class Regular {
-
-      @Test
-      @DisplayName("applicantIdで検索できる")
-      void canFindByApplicantId() {
-        // when, then
-        webTestClient.get()
-            .uri("/api/v1/resumes/applicant")
-            .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBodyList(Resume.class)
-            .consumeWith(result ->
-                assertThat(result.getResponseBody())
-                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
-                        Resume::getEducation,
-                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls, Resume::getPicture)
-                    .containsExactly(
-                        tuple(null, UUID.fromString("12345678-1234-5678-1234-123456789abc"),
-                            UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                            "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                            "https://imageC.png", "1.png"))
-            );
-      }
-    }
-
-    @Nested
-    @DisplayName("異常系")
-    class Error {
-
-      @Test
-      @DisplayName("認証エラー")
-      void authenticationError() {
-        // when, then
-        webTestClient.get()
-            .uri("/api/v1/resumes/applicant/1")
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
@@ -247,35 +187,31 @@ public class ResumeAPITest {
     class Regular {
 
       @Test
-      @DisplayName("応募者を1件登録できる")
-      void canSaveTheResume() {
+      @DisplayName("オファーを1件登録できる")
+      void canSaveTheOffer() {
         // when, then
         webTestClient.post()
-            .uri("/api/v1/resumes")
-            .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
+            .uri("/api/v1/offers")
+            .cookie(CookieKeys.COMPANY_TOKEN, companyJwt)
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
-                  "education": "2021年 A大学卒業",
-                  "experience": "居酒屋バイトリーダー",
-                  "skills": "英検1級",
-                  "interests": "外資企業",
-                  "urls": "https://imageA.png",
-                  "picture": "3.png"
+                  "resumeUuid": "12345678-1234-5678-1234-123456789abd",
+                  "price": 0.01,
+                  "message": "よろしくお願いします。"
                 }
                 """
             )
             .exchange()
             .expectStatus().isOk()
-            .expectBody(Resume.class)
+            .expectBody(Offer.class)
             .consumeWith(result ->
                 assertThat(result.getResponseBody())
-                    .extracting(Resume::getId, Resume::getApplicantUuid, Resume::getEducation,
-                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
-                        Resume::getUrls, Resume::getPicture)
-                    .containsExactly(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                        "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                        "外資企業", "https://imageA.png", "3.png")
+                    .extracting(Offer::getResumeUuid, Offer::getCompanyUuid,
+                        Offer::getPrice, Offer::getMessage, Offer::getStatusId)
+                    .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abd"),
+                        UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        0.01F, "よろしくお願いします。", 0)
             );
       }
     }
@@ -289,17 +225,13 @@ public class ResumeAPITest {
       void authenticationError() {
         // when, then
         webTestClient.post()
-            .uri("/api/v1/resumes")
+            .uri("/api/v1/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue("""
                 {
-                  "applicantUuid": "12345678-1234-1234-1234-123456789abc",
-                  "education": "2021年 A大学卒業",
-                  "experience": "居酒屋バイトリーダー",
-                  "skills": "英検1級",
-                  "interests": "外資企業",
-                  "urls": "https://imageA.png",
-                  "picture": "3.png"
+                  "resumeUuid": "12345678-1234-1234-1234-123456789abd",
+                  "price": 0.01,
+                  "message": "よろしくお願いします。"
                 }
                 """
             )
@@ -331,12 +263,12 @@ public class ResumeAPITest {
     class Regular {
 
       @Test
-      @DisplayName("応募者を1件削除できる")
-      void canDeleteTheResume() {
+      @DisplayName("オファーを1件削除できる")
+      void canDeleteTheOffer() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/resumes/12345678-1234-1234-1234-123456789abc")
-            .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
+            .uri("/api/v1/offers/12345678-1234-1234-1234-123456789abc")
+            .cookie(CookieKeys.COMPANY_TOKEN, companyJwt)
             .exchange()
             .expectStatus().isOk()
             .expectBody().isEmpty();
@@ -352,7 +284,7 @@ public class ResumeAPITest {
       void authenticationError() {
         // when, then
         webTestClient.delete()
-            .uri("/api/v1/resumes/%s".formatted(
+            .uri("/api/v1/offers/%s".formatted(
                 UUID.fromString("12345678-1234-1234-1234-123456789abc")))
             .exchange()
             .expectStatus().isUnauthorized()
