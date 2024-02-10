@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 import org.example.constant.ContextKeys;
+import org.example.persistence.dto.OfferDetailView;
 import org.example.persistence.entity.Company;
 import org.example.persistence.entity.Offer;
 import org.example.service.OfferService;
@@ -132,6 +133,46 @@ class OfferControllerTest {
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                         0.01F, "よろしくお願いします。", 0)
+            );
+      }
+    }
+  }
+
+  @Nested
+  class FindByResumeUuid {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("ResumeUUIDに一致するオファーを全件取得できる")
+      void canFindAllTheOffersByResumeUuid() {
+        // given
+        OfferDetailView offer1 = OfferDetailView.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .resumeUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .companyUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .companyName("株式会社A")
+            .price(0.01F).message("よろしくお願いします。").statusId(0).build();
+        when(offerService.findByResumeUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")))
+            .thenReturn(Flux.just(offer1));
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/offers/resume/12345678-1234-1234-1234-123456789abc")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(OfferDetailView.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(OfferDetailView::getUuid, OfferDetailView::getResumeUuid,
+                        OfferDetailView::getCompanyUuid, OfferDetailView::getCompanyName,
+                        OfferDetailView::getPrice, OfferDetailView::getMessage, OfferDetailView::getStatusId)
+                    .containsExactly(
+                        tuple(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        "株式会社A", 0.01F, "よろしくお願いします。", 0))
             );
       }
     }

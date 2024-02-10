@@ -19,7 +19,7 @@ public interface OfferRepository extends ReactiveCrudRepository<Offer, String> {
   Mono<Offer> findByUuid(@NonNull UUID id);
 
   @NonNull
-  Mono<Offer> save(@NonNull Offer applicant);
+  Mono<Offer> save(@NonNull Offer offer);
 
   @NonNull
   Mono<Void> deleteByUuid(@NonNull UUID id);

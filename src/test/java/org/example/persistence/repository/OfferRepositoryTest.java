@@ -57,7 +57,8 @@ class OfferRepositoryTest {
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                    0.01, "よろしくお願いします。", 0));
+                    0.01, "よろしくお願いします。", 0))
+            .expectComplete();
       }
     }
   }
@@ -83,7 +84,8 @@ class OfferRepositoryTest {
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
-                    0.01, "よろしくお願いします。", 0));
+                    0.01, "よろしくお願いします。", 0))
+            .expectComplete();
       }
     }
   }

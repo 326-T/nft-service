@@ -1,10 +1,13 @@
 package org.example.service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 import org.example.constant.OfferStatus;
 import org.example.error.exception.NotFoundException;
+import org.example.persistence.dto.OfferDetailView;
 import org.example.persistence.entity.Offer;
+import org.example.persistence.repository.OfferDetailViewRepository;
 import org.example.persistence.repository.OfferRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -15,9 +18,12 @@ import reactor.core.publisher.Mono;
 public class OfferService {
 
   private final OfferRepository offerRepository;
+  private final OfferDetailViewRepository offerDetailViewRepository;
 
-  public OfferService(OfferRepository offerRepository) {
+  public OfferService(OfferRepository offerRepository,
+      OfferDetailViewRepository offerDetailViewRepository) {
     this.offerRepository = offerRepository;
+    this.offerDetailViewRepository = offerDetailViewRepository;
   }
 
   public Flux<Offer> findAll() {
@@ -28,6 +34,10 @@ public class OfferService {
     return offerRepository.findByUuid(id);
   }
 
+  public Flux<OfferDetailView> findByResumeUuid(UUID resumeUuid) {
+    return offerDetailViewRepository.findByResumeUuid(resumeUuid);
+  }
+
   public Mono<Offer> save(Offer offer) {
     return offerRepository.save(offer);
   }
@@ -35,6 +45,8 @@ public class OfferService {
   public Mono<Offer> update(Offer offer) {
     return offerRepository.findByUuid(offer.getUuid())
         .switchIfEmpty(Mono.error(new NotFoundException("Offer not found.")))
+        .filter(old -> Objects.equals(old.getStatusId(), OfferStatus.PENDING.getId()))
+        .switchIfEmpty(Mono.error(new NotFoundException("Offer status is not pending.")))
         .map(old -> Offer.builder()
             .uuid(old.getUuid())
             .resumeUuid(old.getResumeUuid())
@@ -51,6 +63,8 @@ public class OfferService {
   public Mono<Offer> updateOnlyStatus(UUID uuid, OfferStatus status) {
     return offerRepository.findByUuid(uuid)
         .switchIfEmpty(Mono.error(new NotFoundException("Offer not found.")))
+        .filter(old -> Objects.equals(old.getStatusId(), OfferStatus.PENDING.getId()))
+        .switchIfEmpty(Mono.error(new NotFoundException("Offer status is not pending.")))
         .map(old -> Offer.builder()
             .uuid(old.getUuid())
             .resumeUuid(old.getResumeUuid())
