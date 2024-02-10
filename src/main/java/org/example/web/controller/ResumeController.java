@@ -56,8 +56,7 @@ public class ResumeController {
       @RequestBody ResumeInsertRequest request) {
     Resume resume = request.exportEntity();
     Applicant applicant = reactiveContextService.getAttribute(exchange, ContextKeys.APPLICANT_KEY);
-    UUID uuid = applicant.getUuid();
-    resume.setApplicantUuid(uuid);
+    resume.setApplicantUuid(applicant.getUuid());
     return resumeService.insert(resume).map(ResumeResponse::new);
   }
 

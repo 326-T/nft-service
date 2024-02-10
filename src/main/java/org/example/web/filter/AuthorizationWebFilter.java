@@ -35,25 +35,44 @@ public class AuthorizationWebFilter implements WebFilter {
         path.startsWith("/api/v1/applicants/login") || path.startsWith("/api/v1/companies/login")) {
       return chain.filter(exchange);
     }
-    // 認証されていてGETメソッドの場合は全てのAPIを許可する
-    if (Boolean.TRUE.equals(reactiveContextService.containsAttributes(
-        exchange, ContextKeys.APPLICANT_KEY, ContextKeys.COMPANY_KEY)) &&
-        HttpMethod.GET.equals(method)) {
+    if (Boolean.TRUE.equals(reactiveContextService
+        .containsAttributes(exchange, ContextKeys.APPLICANT_KEY)) &&
+        Boolean.TRUE.equals(applicantHasPermission(method, path))) {
       return chain.filter(exchange);
     }
-
-    if (Boolean.TRUE.equals(
-        reactiveContextService.containsAttributes(exchange, ContextKeys.APPLICANT_KEY)) &&
-        (path.startsWith("/api/v1/resumes") || path.startsWith("/api/v1/applicants"))) {
+    if (Boolean.TRUE.equals(reactiveContextService
+        .containsAttributes(exchange, ContextKeys.COMPANY_KEY)) &&
+        Boolean.TRUE.equals(companyHasPermission(method, path))) {
       return chain.filter(exchange);
     }
-
-    if (Boolean.TRUE.equals(
-        reactiveContextService.containsAttributes(exchange, ContextKeys.COMPANY_KEY)) &&
-        path.startsWith("/api/v1/companies")) {
-      return chain.filter(exchange);
-    }
-
     return Mono.error(new ForbiddenException("認可されていません。"));
+  }
+
+  private Boolean applicantHasPermission(HttpMethod method, String path) {
+    if (HttpMethod.GET.equals(method)) {
+      return Boolean.TRUE;
+    }
+    if (path.startsWith("/api/v1/resumes") || path.startsWith("/api/v1/applicants")) {
+      return Boolean.TRUE;
+    }
+    if (path.startsWith("/api/v1/offers/accepted") || path.startsWith("/api/v1/offers/rejected")) {
+      return Boolean.TRUE;
+    }
+    return Boolean.FALSE;
+  }
+
+  private Boolean companyHasPermission(HttpMethod method, String path) {
+    if (HttpMethod.GET.equals(method)) {
+      return Boolean.TRUE;
+    }
+    if (path.startsWith("/api/v1/companies")) {
+      return Boolean.TRUE;
+    }
+    if (path.startsWith("/api/v1/offers") ||
+        (!path.startsWith("/api/v1/offers/accepted"))
+        || !path.startsWith("/api/v1/offers/rejected")) {
+      return Boolean.TRUE;
+    }
+    return Boolean.FALSE;
   }
 }
