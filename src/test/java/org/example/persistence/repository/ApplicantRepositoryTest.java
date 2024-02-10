@@ -55,7 +55,8 @@ class ApplicantRepositoryTest {
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "太郎",
                     "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
-                    ""));
+                    ""))
+            .expectComplete();
       }
     }
   }
@@ -80,7 +81,8 @@ class ApplicantRepositoryTest {
                     Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
                     Applicant::getPasswordDigest)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
-                    "山田", "xxx@example.org"));
+                    "山田", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
@@ -104,7 +106,8 @@ class ApplicantRepositoryTest {
                     Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
-                    "山田", "xxx@example.org"));
+                    "山田", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
@@ -138,7 +141,8 @@ class ApplicantRepositoryTest {
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
                 .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "四郎",
                     "田中", "aaa@example.org", "090-3333-4444", "東京都港区",
-                    ""));
+                    ""))
+            .expectComplete();
       }
     }
   }

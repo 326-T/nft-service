@@ -8,6 +8,7 @@ import org.example.persistence.entity.Offer;
 import org.example.service.OfferService;
 import org.example.service.ReactiveContextService;
 import org.example.web.request.OfferRequest;
+import org.example.web.response.OfferDetailResponse;
 import org.example.web.response.OfferResponse;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,11 @@ public class OfferController {
   @GetMapping("/{id}")
   public Mono<OfferResponse> findByUuid(@PathVariable UUID id) {
     return offerService.findByUuid(id).map(OfferResponse::new);
+  }
+
+  @GetMapping("/resume/{id}")
+  public Flux<OfferDetailResponse> findByResumeUuid(@PathVariable UUID id) {
+    return offerService.findByResumeUuid(id).map(OfferDetailResponse::new);
   }
 
   @PostMapping
