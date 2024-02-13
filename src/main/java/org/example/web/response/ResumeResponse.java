@@ -1,5 +1,6 @@
 package org.example.web.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
@@ -16,7 +17,9 @@ public class ResumeResponse {
   private final String interests;
   private final String urls;
   private final String picture;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private final LocalDateTime createdAt;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private final LocalDateTime updatedAt;
   private final Long version;
 

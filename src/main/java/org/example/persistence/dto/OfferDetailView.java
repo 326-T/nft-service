@@ -1,4 +1,4 @@
-package org.example.persistence.entity;
+package org.example.persistence.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
@@ -7,31 +7,32 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 @Builder
-@Table("companies")
-public class Company {
+@Table("offer_detail_view")
+public class OfferDetailView {
 
-  @Id
   private Long id;
   private UUID uuid;
-  private String name;
-  private String email;
-  private String phone;
-  private String address;
-  @Column("password_digest")
-  private String passwordDigest;
+  @Column("resume_uuid")
+  private UUID resumeUuid;
+  @Column("company_uuid")
+  private UUID companyUuid;
+  @Column("company_name")
+  private String companyName;
+  private Float price;
+  private String message;
+  @Column("status_id")
+  private Integer statusId;
   @Column("created_at")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
   @Column("updated_at")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updatedAt;
-  private Long version;
 }

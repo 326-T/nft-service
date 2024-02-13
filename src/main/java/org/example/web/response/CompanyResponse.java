@@ -1,5 +1,6 @@
 package org.example.web.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
@@ -13,7 +14,9 @@ public class CompanyResponse {
   private final String email;
   private final String phone;
   private final String address;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private final LocalDateTime createdAt;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private final LocalDateTime updatedAt;
   private final Long version;
 

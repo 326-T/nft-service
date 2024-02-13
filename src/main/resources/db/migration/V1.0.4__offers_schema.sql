@@ -11,6 +11,5 @@ CREATE TABLE offers
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT offers_uuid_unique UNIQUE (uuid),
     CONSTRAINT offers_resume_uuid_foreign FOREIGN KEY (resume_uuid) REFERENCES resumes (uuid) ON DELETE CASCADE,
-    CONSTRAINT offers_company_uuid_foreign FOREIGN KEY (company_uuid) REFERENCES companies (uuid) ON DELETE CASCADE,
-    CONSTRAINT offers_foreign_unique UNIQUE (resume_uuid, company_uuid)
+    CONSTRAINT offers_company_uuid_foreign FOREIGN KEY (company_uuid) REFERENCES companies (uuid) ON DELETE CASCADE
 );

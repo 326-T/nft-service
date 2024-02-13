@@ -33,8 +33,8 @@ public class Applicant {
   @Column("created_at")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
-  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   @Column("updated_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updatedAt;
   private Long version;
 }
