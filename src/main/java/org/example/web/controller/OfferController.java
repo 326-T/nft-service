@@ -66,12 +66,15 @@ public class OfferController {
     return offerService.update(offer).map(OfferResponse::new);
   }
 
-  @PatchMapping("/accepted/{id}")
+  @PatchMapping("/{id}/accept")
   public Mono<OfferResponse> accepted(@PathVariable UUID id) {
-    return offerService.updateOnlyStatus(id, OfferStatus.ACCEPTED).map(OfferResponse::new);
+    return offerService.findByUuid(id)
+        .flatMap(offer -> offerService.rejectCheaper(offer.getResumeUuid(), offer.getUuid()))
+        .then(offerService.updateOnlyStatus(id, OfferStatus.ACCEPTED))
+        .map(OfferResponse::new);
   }
 
-  @PatchMapping("/rejected/{id}")
+  @PatchMapping("/{id}/reject")
   public Mono<OfferResponse> rejected(@PathVariable UUID id) {
     return offerService.updateOnlyStatus(id, OfferStatus.REJECTED).map(OfferResponse::new);
   }
