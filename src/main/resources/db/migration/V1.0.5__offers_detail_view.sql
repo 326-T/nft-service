@@ -12,4 +12,4 @@ CREATE VIEW offer_detail_view AS
         c.name AS company_name,
     FROM offers o
     JOIN companies c ON o.company_uuid = c.uuid
-    ORDER BY o.updated_at DESC;
+    ORDER BY o.updated_at ASC;
