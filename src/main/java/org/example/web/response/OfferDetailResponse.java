@@ -1,8 +1,10 @@
 package org.example.web.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
+import org.example.constant.OfferStatus;
 import org.example.persistence.dto.OfferDetailView;
 
 @Getter
@@ -15,7 +17,10 @@ public class OfferDetailResponse {
   private final Float price;
   private final String message;
   private final Integer statusId;
+  private final String status;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private final LocalDateTime createdAt;
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private final LocalDateTime updatedAt;
 
   public OfferDetailResponse(OfferDetailView offer) {
@@ -26,6 +31,7 @@ public class OfferDetailResponse {
     this.price = offer.getPrice();
     this.message = offer.getMessage();
     this.statusId = offer.getStatusId();
+    this.status = OfferStatus.valueOf(offer.getStatusId()).toString();
     this.createdAt = offer.getCreatedAt();
     this.updatedAt = offer.getUpdatedAt();
   }
