@@ -1,5 +1,6 @@
 package org.example.persistence.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,10 @@ public class OfferDetailView {
   private String message;
   @Column("status_id")
   private Integer statusId;
+  @Column("created_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
+  @Column("updated_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updatedAt;
 }
