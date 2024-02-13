@@ -61,9 +61,8 @@ class CompanyServiceTest {
                 .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社", "xxx@example.org", "090-1234-5678",
-                    "東京都渋谷区",
-                    ""))
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "C株式会社", "zzz@example.org", "090-1111-2222",
+                    "東京都千代田区", ""))
             .assertNext(company -> assertThat(company)
                 .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
@@ -75,8 +74,10 @@ class CompanyServiceTest {
                 .extracting(Company::getUuid, Company::getName,
                     Company::getEmail, Company::getPhone, Company::getAddress,
                     Company::getPasswordDigest)
-                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "C株式会社", "zzz@example.org", "090-1111-2222",
-                    "東京都千代田区", ""));
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "A株式会社", "xxx@example.org", "090-1234-5678",
+                    "東京都渋谷区",
+                    ""))
+            .verifyComplete();
       }
     }
   }

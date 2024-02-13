@@ -51,7 +51,8 @@ class CompanyRepositoryTest {
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
                 .containsExactly("A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
-                    ""));
+                    ""))
+            .expectComplete();
       }
     }
   }
@@ -74,7 +75,8 @@ class CompanyRepositoryTest {
             .assertNext(company -> assertThat(company)
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
-                .containsExactly("A株式会社", "xxx@example.org"));
+                .containsExactly("A株式会社", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
@@ -96,7 +98,8 @@ class CompanyRepositoryTest {
             .assertNext(company -> assertThat(company)
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
-                .containsExactly("A株式会社", "xxx@example.org"));
+                .containsExactly("A株式会社", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
@@ -126,7 +129,8 @@ class CompanyRepositoryTest {
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
                 .containsExactly("D株式会社", "aaa@example.org", "090-3333-4444", "東京都港区",
-                    ""));
+                    ""))
+            .expectComplete();
       }
     }
   }

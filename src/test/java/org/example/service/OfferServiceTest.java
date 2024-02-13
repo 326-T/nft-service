@@ -5,7 +5,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import org.example.persistence.dto.OfferDetailView;
 import org.example.persistence.entity.Offer;
+import org.example.persistence.repository.OfferDetailViewRepository;
 import org.example.persistence.repository.OfferRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,6 +29,8 @@ class OfferServiceTest {
   private OfferService offerService;
   @Mock
   private OfferRepository offerRepository;
+  @Mock
+  private OfferDetailViewRepository offerDetailViewRepository;
   @Mock
   private PasswordEncoder passwordEncoder;
 
@@ -117,6 +121,42 @@ class OfferServiceTest {
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     UUID.fromString("12345678-1234-1234-1234-123456789abc"),
                     0.01F, "よろしくお願いします。", 0))
+            .verifyComplete();
+      }
+    }
+  }
+
+  @Nested
+  class FindByResumeUuid {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("Resume UUIDで検索できる")
+      void canFindByResumeUuid() {
+        // given
+        OfferDetailView offer1 = OfferDetailView.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .resumeUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .companyUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .companyName("株式会社A")
+            .price(0.01F).message("よろしくお願いします。").statusId(0).build();
+        when(offerDetailViewRepository.findByResumeUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")))
+            .thenReturn(Flux.just(offer1));
+        // when
+        Flux<OfferDetailView> actual = offerDetailViewRepository.findByResumeUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"));
+        // then
+        StepVerifier.create(actual)
+            .assertNext(offer -> assertThat(offer)
+                .extracting(OfferDetailView::getUuid, OfferDetailView::getResumeUuid,
+                    OfferDetailView::getCompanyUuid, OfferDetailView::getCompanyName,
+                    OfferDetailView::getPrice, OfferDetailView::getMessage, OfferDetailView::getStatusId)
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    "株式会社A", 0.01F, "よろしくお願いします。", 0))
             .verifyComplete();
       }
     }

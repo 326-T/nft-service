@@ -9,6 +9,7 @@ import org.example.Main;
 import org.example.constant.CookieKeys;
 import org.example.error.response.ErrorResponse;
 import org.example.listener.FlywayTestExecutionListener;
+import org.example.persistence.dto.OfferDetailView;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Company;
 import org.example.persistence.entity.Offer;
@@ -159,6 +160,62 @@ public class OfferAPITest {
         webTestClient.get()
             .uri("/api/v1/offers/%s".formatted(
                 UUID.fromString("12345678-1234-1234-1234-123456789abc")))
+            .exchange()
+            .expectStatus().isUnauthorized()
+            .expectBody(ErrorResponse.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
+                        ErrorResponse::getSummary, ErrorResponse::getDetail,
+                        ErrorResponse::getMessage)
+                    .containsExactly(401, null,
+                        "クライアント側の認証切れ",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
+                        "JWTが有効ではありません。")
+            );
+      }
+    }
+  }
+
+  @Nested
+  class FindByResumeId {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("履歴書IDで検索できる")
+      void canFindByResumeId() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/offers/resume/12345678-1234-5678-1234-123456789abc")
+            .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(OfferDetailView.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(OfferDetailView::getUuid, OfferDetailView::getResumeUuid, OfferDetailView::getCompanyUuid,
+                        OfferDetailView::getPrice, OfferDetailView::getMessage, OfferDetailView::getStatusId)
+                    .containsExactly(
+                        tuple(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                        UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                        UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                        0.01F, "よろしくお願いします。", 0)));
+      }
+    }
+
+    @Nested
+    @DisplayName("異常系")
+    class Error {
+
+      @Test
+      @DisplayName("認証エラー")
+      void authenticationError() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/offers/resume/12345678-1234-5678-1234-123456789abc")
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody(ErrorResponse.class)
