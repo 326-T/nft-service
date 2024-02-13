@@ -1,5 +1,6 @@
 package org.example.persistence.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -30,8 +31,10 @@ public class Applicant {
   @Column("password_digest")
   private String passwordDigest;
   @Column("created_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
   @Column("updated_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updatedAt;
   private Long version;
 }
