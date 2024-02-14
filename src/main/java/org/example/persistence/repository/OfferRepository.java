@@ -18,6 +18,8 @@ public interface OfferRepository extends ReactiveCrudRepository<Offer, String> {
   @NonNull
   Mono<Offer> findByUuid(@NonNull UUID id);
 
+  Flux<Offer> findByResumeUuid(UUID resumeUuid);
+
   @NonNull
   Mono<Offer> save(@NonNull Offer offer);
 

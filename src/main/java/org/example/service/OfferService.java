@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
 @Service
 public class OfferService {
@@ -62,8 +61,9 @@ public class OfferService {
   }
 
   public Mono<Void> rejectCheaper(UUID resumeUuid, UUID offerUuid) {
-    Mono<Offer> border = offerRepository.findByUuid(offerUuid);
-    return offerDetailViewRepository.findByResumeUuid(resumeUuid)
+    Mono<Offer> border = offerRepository.findByUuid(offerUuid)
+        .switchIfEmpty(Mono.error(new NotFoundException("Offer not found.")));
+    return offerRepository.findByResumeUuid(resumeUuid)
         .filter(offer -> Objects.equals(offer.getStatusId(), OfferStatus.PENDING.getId()))
         .filter(offer -> !Objects.equals(offer.getUuid(), offerUuid))
         .filterWhen(offer -> border.map(borderOffer -> borderOffer.getPrice() > offer.getPrice()))
