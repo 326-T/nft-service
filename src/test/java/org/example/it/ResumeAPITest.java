@@ -237,6 +237,65 @@ public class ResumeAPITest {
   }
 
   @Nested
+  class FindByMintStatusId {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("mintStatusIdで検索できる")
+      void canFindByMintStatusId() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/resumes/mint-status/0")
+            .cookie(CookieKeys.APPLICANT_TOKEN, jwt)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(Resume.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation,
+                        Resume::getExperience, Resume::getSkills, Resume::getInterests,
+                        Resume::getUrls, Resume::getPicture, Resume::getMintStatusId)
+                    .containsExactly(
+                        tuple(null, UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                            UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                            "https://imageC.png", "1.png", 0))
+            );
+      }
+    }
+
+    @Nested
+    @DisplayName("異常系")
+    class Error {
+
+      @Test
+      @DisplayName("認証エラー")
+      void authenticationError() {
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/resumes/mint-status/2")
+            .exchange()
+            .expectStatus().isUnauthorized()
+            .expectBody(ErrorResponse.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(ErrorResponse::getStatus, ErrorResponse::getCode,
+                        ErrorResponse::getSummary, ErrorResponse::getDetail,
+                        ErrorResponse::getMessage)
+                    .containsExactly(401, null,
+                        "クライアント側の認証切れ",
+                        "org.example.error.exception.ForbiddenException: 認可されていません。",
+                        "JWTが有効ではありません。")
+            );
+      }
+    }
+  }
+
+  @Nested
   @TestExecutionListeners(
       listeners = {FlywayTestExecutionListener.class},
       mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
