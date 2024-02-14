@@ -14,6 +14,7 @@ public class ResumeUpdateRequest {
   private String interests;
   private String urls;
   private String picture;
+  private Float minimumPrice;
 
   public Resume exportEntity() {
     return Resume.builder()
@@ -23,6 +24,7 @@ public class ResumeUpdateRequest {
         .interests(interests)
         .urls(urls)
         .picture(picture)
+        .minimumPrice(minimumPrice)
         .build();
   }
 }

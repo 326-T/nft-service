@@ -2,6 +2,7 @@ package org.example.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.example.constant.MintStatus;
 import org.example.error.exception.NotFoundException;
 import org.example.persistence.entity.Resume;
 import org.example.persistence.repository.ResumeRepository;
@@ -51,6 +52,18 @@ public class ResumeService {
             .updatedAt(LocalDateTime.now())
             .version(old.getVersion())
             .build())
+        .flatMap(resumeRepository::save);
+  }
+
+  public Mono<Resume> updateOnlyMintStatus(UUID uuid, Float price) {
+    return resumeRepository.findByUuid(uuid)
+        .switchIfEmpty(Mono.error(new NotFoundException("Resume not found.")))
+        .map(old -> {
+          old.setMinimumPrice(price);
+          old.setMintStatusId(MintStatus.PUBLISHED.getId());
+          old.setUpdatedAt(LocalDateTime.now());
+          return old;
+        })
         .flatMap(resumeRepository::save);
   }
 

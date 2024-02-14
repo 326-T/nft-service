@@ -68,6 +68,13 @@ public class ResumeController {
     return resumeService.update(resume).map(ResumeResponse::new);
   }
 
+  @PatchMapping("/{id}/mint")
+  public Mono<ResumeResponse> mint(@PathVariable UUID id,
+      @RequestBody ResumeUpdateRequest request) {
+    return resumeService.updateOnlyMintStatus(id, request.getMinimumPrice())
+        .map(ResumeResponse::new);
+  }
+
   @DeleteMapping("/{id}")
   public Mono<Void> deleteById(@PathVariable UUID id) {
     return resumeService.deleteById(id);
