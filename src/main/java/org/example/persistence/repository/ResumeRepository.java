@@ -18,6 +18,8 @@ public interface ResumeRepository extends ReactiveCrudRepository<Resume, String>
   @NonNull
   Mono<Resume> findByUuid(UUID uuid);
 
+  Flux<Resume> findByMintStatusId(Integer mintStatusId);
+
   Flux<Resume> findByApplicantUuid(UUID applicantUuid);
 
   @NonNull

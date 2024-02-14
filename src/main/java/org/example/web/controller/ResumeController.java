@@ -51,6 +51,11 @@ public class ResumeController {
     return resumeService.findByApplicantId(uuid).map(ResumeResponse::new);
   }
 
+  @GetMapping("/mint-status/{id}")
+  public Flux<ResumeResponse> findByMintStatusId(@PathVariable Integer id) {
+    return resumeService.findByMintStatusId(id).map(ResumeResponse::new);
+  }
+
   @PostMapping
   public Mono<ResumeResponse> save(ServerWebExchange exchange,
       @RequestBody ResumeInsertRequest request) {
@@ -71,8 +76,13 @@ public class ResumeController {
   @PatchMapping("/{id}/mint")
   public Mono<ResumeResponse> mint(@PathVariable UUID id,
       @RequestBody ResumeUpdateRequest request) {
-    return resumeService.updateOnlyMintStatus(id, request.getMinimumPrice())
+    return resumeService.mint(id, request.getMinimumPrice())
         .map(ResumeResponse::new);
+  }
+
+  @PatchMapping("/{id}/expire")
+  public Mono<ResumeResponse> expire(@PathVariable UUID id) {
+    return resumeService.expire(id).map(ResumeResponse::new);
   }
 
   @DeleteMapping("/{id}")

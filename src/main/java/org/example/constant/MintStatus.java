@@ -8,7 +8,8 @@ import lombok.Getter;
 @Getter
 public enum MintStatus {
   PENDING(0, "未ミント"),
-  PUBLISHED(1, "ミント済");
+  PUBLISHED(1, "ミント済"),
+  EXPIRED(2, "期限切れ");
 
   private final Integer id;
   private final String name;

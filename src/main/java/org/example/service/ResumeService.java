@@ -28,6 +28,10 @@ public class ResumeService {
     return resumeRepository.findByUuid(id);
   }
 
+  public Flux<Resume> findByMintStatusId(Integer mintStatusId) {
+    return resumeRepository.findByMintStatusId(mintStatusId);
+  }
+
   public Flux<Resume> findByApplicantId(UUID resumeId) {
     return resumeRepository.findByApplicantUuid(resumeId);
   }
@@ -55,12 +59,23 @@ public class ResumeService {
         .flatMap(resumeRepository::save);
   }
 
-  public Mono<Resume> updateOnlyMintStatus(UUID uuid, Float price) {
+  public Mono<Resume> mint(UUID uuid, Float price) {
     return resumeRepository.findByUuid(uuid)
         .switchIfEmpty(Mono.error(new NotFoundException("Resume not found.")))
         .map(old -> {
           old.setMinimumPrice(price);
           old.setMintStatusId(MintStatus.PUBLISHED.getId());
+          old.setUpdatedAt(LocalDateTime.now());
+          return old;
+        })
+        .flatMap(resumeRepository::save);
+  }
+
+  public Mono<Resume> expire(UUID uuid) {
+    return resumeRepository.findByUuid(uuid)
+        .switchIfEmpty(Mono.error(new NotFoundException("Resume not found.")))
+        .map(old -> {
+          old.setMintStatusId(MintStatus.EXPIRED.getId());
           old.setUpdatedAt(LocalDateTime.now());
           return old;
         })
