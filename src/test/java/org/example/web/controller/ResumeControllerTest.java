@@ -198,6 +198,48 @@ class ResumeControllerTest {
   }
 
   @Nested
+  class FindByMintStatusId {
+
+    @Nested
+    @DisplayName("正常系")
+    class Regular {
+
+      @Test
+      @DisplayName("applicantIdで検索できる")
+      void canFindByApplicantId() {
+        // given
+        Resume resume1 = Resume.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abc"))
+            .education("2021年 A大学卒業")
+            .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
+            .urls("https://imageA.png").picture("3.png").mintStatusId(0).build();
+        when(resumeService.findByMintStatusId(0)).thenReturn(
+            Flux.just(resume1));
+        // when, then
+        webTestClient.get()
+            .uri("/api/v1/resumes/mint-status/0")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(Resume.class)
+            .consumeWith(result ->
+                assertThat(result.getResponseBody())
+                    .extracting(Resume::getId, Resume::getUuid, Resume::getApplicantUuid,
+                        Resume::getEducation, Resume::getExperience, Resume::getSkills,
+                        Resume::getInterests, Resume::getUrls, Resume::getPicture,
+                        Resume::getMintStatusId)
+                    .containsExactly(
+                        tuple(null, UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                            "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
+                            "外資企業", "https://imageA.png", "3.png", 0)
+                    )
+            );
+      }
+    }
+  }
+
+  @Nested
   class Save {
 
     @Nested
