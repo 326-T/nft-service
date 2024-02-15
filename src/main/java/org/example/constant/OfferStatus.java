@@ -8,8 +8,9 @@ import lombok.Getter;
 @Getter
 public enum OfferStatus {
   PENDING(0, "申請中"),
-  ACCEPTED(1, "承認済み"),
-  REJECTED(2, "拒否済み");
+  PENDING_PAYMENT(1, "支払い待ち"),
+  ACCEPTED(2, "承認済み"),
+  REJECTED(3, "拒否済み");
 
   private final Integer id;
   private final String name;

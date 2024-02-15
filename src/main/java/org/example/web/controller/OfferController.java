@@ -66,6 +66,13 @@ public class OfferController {
     return offerService.update(offer).map(OfferResponse::new);
   }
 
+  @PatchMapping("/{id}/payment")
+  public Mono<OfferResponse> payment(@PathVariable UUID id) {
+    return offerService.findByUuid(id)
+        .then(offerService.updateOnlyStatus(id, OfferStatus.PENDING_PAYMENT))
+        .map(OfferResponse::new);
+  }
+
   @PatchMapping("/{id}/accept")
   public Mono<OfferResponse> accepted(@PathVariable UUID id) {
     return offerService.findByUuid(id)

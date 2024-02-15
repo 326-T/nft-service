@@ -74,8 +74,6 @@ public class OfferService {
   public Mono<Offer> updateOnlyStatus(UUID uuid, OfferStatus status) {
     return offerRepository.findByUuid(uuid)
         .switchIfEmpty(Mono.error(new NotFoundException("Offer not found.")))
-        .filter(old -> Objects.equals(old.getStatusId(), OfferStatus.PENDING.getId()))
-        .switchIfEmpty(Mono.error(new NotFoundException("Offer status is not pending.")))
         .map(old -> Offer.builder()
             .id(old.getId())
             .uuid(old.getUuid())
