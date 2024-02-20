@@ -28,7 +28,7 @@ jobs:
 
       - name: Extract tag name
         id: get_version
-        run: echo "::set-output name=VERSION::${GITHUB_REF#refs/tags/}"
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -36,7 +36,7 @@ jobs:
           context: .
           file: .docker/Dockerfile
           push: true
-          tags: docker.io/${{ github.DOCKERHUB_USER }}/nft-service:${{ steps.get_version.outputs.VERSION }}
+          tags: docker.io/${{ secrets.DOCKERHUB_USER }}/nft-service:${{ steps.get_version.outputs.VERSION }}
 
       - name: Image digest
         run: echo ${{ steps.build-and-push.outputs.digest }}
