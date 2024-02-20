@@ -14,6 +14,7 @@ public class CorsConfiguration implements WebFluxConfigurer {
     corsRegistry.addMapping("/**")
         .allowedOriginPatterns("http://localhost:*")
         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH")
-        .allowedHeaders("*");
+        .allowedHeaders("Content-Type", "Set-Cookie", "Cookie", "Authorization")
+        .allowCredentials(true);
   }
 }

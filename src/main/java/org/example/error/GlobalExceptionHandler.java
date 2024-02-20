@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.example.error.exception.PasswordAuthenticationException;
-import org.example.error.exception.UnauthenticatedException;
+import org.example.error.exception.ForbiddenException;
 import org.example.error.response.ErrorResponse;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
   @NonNull
   @Override
   public Mono<Void> handle(@NonNull ServerWebExchange exchange, @NonNull Throwable ex) {
-    if (ex instanceof UnauthenticatedException) {
+    if (ex instanceof ForbiddenException) {
       return setResponse(exchange, HttpStatus.UNAUTHORIZED,
           ErrorResponse.builder()
               .status(HttpStatus.UNAUTHORIZED.value())
@@ -68,7 +68,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
     response.getHeaders().setAccessControlAllowOrigin("*");
     response.getHeaders().setAccessControlAllowHeaders(List.of("*"));
     response.getHeaders().setAccessControlAllowMethods(List.of(
-        HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.OPTIONS));
+        HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.PATCH, HttpMethod.OPTIONS));
     response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
     Flux<DataBuffer> buffer = Mono.just(body)
         .flatMap(this::writeValueAsBytes)

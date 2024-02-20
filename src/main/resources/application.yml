@@ -2,26 +2,34 @@ server:
   port: 8080
 
 spring:
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: scholarship
-      username: scholarship
-      password: scholarship
-      authentication-database: admin
-
-management:
-  health:
-    redis:
-      enabled: false
+  r2dbc:
+    url: r2dbc:h2:mem:///demo_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;TRACE_LEVEL_FILE=4
+    username: demo_db
+    password: demo_db
+  h2:
+    console:
+      enabled: true
+  flyway:
+    url: jdbc:h2:mem:demo_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;TRACE_LEVEL_FILE=4
+    user: demo_db
+    password: demo_db
+    clean-on-validation-error: true
+    baseline-on-migrate: true
+    clean-disabled: false
+    locations:
+      - classpath:db/migration
+      - classpath:db/sample
 
 jwt:
   secret-key: secret
   ttl: 86400000
 auth:
   nonAuthPaths:
-    - path: /api/v1/auth/login
+    - path: /api/v1/applicants/login
       method: POST
-    - path: /api/v1/auth
+    - path: /api/v1/applicants
+      method: POST
+    - path: /api/v1/companies/login
+      method: POST
+    - path: /api/v1/companies
       method: POST

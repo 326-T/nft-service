@@ -2,6 +2,7 @@ package org.example.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -12,6 +13,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import org.example.config.JwtConfig;
 import org.example.persistence.entity.Applicant;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -29,12 +32,13 @@ class JwtServiceTest {
 
   @InjectMocks
   private JwtService jwtService;
-
+  @Mock
+private JwtConfig jwtConfig;
 
   @BeforeAll
   void beforeAll() {
-    ReflectionTestUtils.setField(jwtService, "secretKey", "secret");
-    ReflectionTestUtils.setField(jwtService, "ttl", 1000L);
+    when(jwtConfig.getTtl()).thenReturn(1000L);
+    when(jwtConfig.getSecretKey()).thenReturn("secret");
   }
 
   @Nested
@@ -48,7 +52,9 @@ class JwtServiceTest {
       @DisplayName("JWTを生成できる")
       void encode() {
         // given
-        Applicant user = Applicant.builder().id("1").firstName("太郎").lastName("山田")
+        Applicant user = Applicant.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abc")).firstName("太郎")
+            .lastName("山田")
             .email("xxx@example.org").phone("090-1234-5678").address("東京都渋谷区")
             .passwordDigest("").build();
         // when
@@ -57,7 +63,7 @@ class JwtServiceTest {
         DecodedJWT jwtDecoded = JWT.require(Algorithm.HMAC256("secret")).build().verify(jwt);
         assertThat(jwtDecoded.getIssuer()).isEqualTo("org.example");
         assertThat(jwtDecoded.getAudience()).isEqualTo(List.of("org.example"));
-        assertThat(jwtDecoded.getSubject()).isEqualTo("1");
+        assertThat(jwtDecoded.getSubject()).isEqualTo("12345678-1234-1234-1234-123456789abc");
         assertThat(jwtDecoded.getClaim("firstName").asString()).isEqualTo("太郎");
         assertThat(jwtDecoded.getClaim("lastName").asString()).isEqualTo("山田");
         assertThat(jwtDecoded.getClaim("email").asString()).isEqualTo("xxx@example.org");
@@ -83,7 +89,7 @@ class JwtServiceTest {
             .withJWTId(UUID.randomUUID().toString())
             .withIssuer("org.example")
             .withAudience("org.example")
-            .withSubject("1")
+            .withSubject("12345678-1234-1234-1234-123456789abc")
             .withClaim("firstName", "太郎")
             .withClaim("lastName", "山田")
             .withClaim("email", "xxx@example.org")
@@ -97,9 +103,11 @@ class JwtServiceTest {
         Applicant applicant = jwtService.decodeApplicant(jwt);
         // then
         assertThat(applicant)
-            .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
+            .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                Applicant::getEmail,
                 Applicant::getPhone, Applicant::getAddress)
-            .containsExactly("太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区");
+            .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
+                "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区");
       }
     }
 

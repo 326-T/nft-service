@@ -2,50 +2,27 @@ package org.example.persistence.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.example.config.MongoAuditingConfiguration;
+import java.util.UUID;
+import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Resume;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestExecutionListeners;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@DataMongoTest
-@Import(MongoAuditingConfiguration.class)
-@DirtiesContext
+@DataR2dbcTest
 class ResumeRepositoryTest {
 
   @Autowired
   ResumeRepository resumeRepository;
-
-  @BeforeEach
-  void setUp() {
-    resumeRepository.save(
-        Resume.builder().applicantId("1").education("2021年 A大学卒業")
-            .experience("居酒屋バイトリーダー").skills("英検1級").interests("外資企業")
-            .references("https://imageA.png").build()).block();
-    resumeRepository.save(
-        Resume.builder().applicantId("2").education("2020年 B大学卒業").experience("コンビニバイト")
-            .skills("TOEIC 900点").interests("ベンチャー企業")
-            .references("https://imageB.png").build()).block();
-    resumeRepository.save(
-        Resume.builder().applicantId("3").education("2019年 C大学卒業").experience("カフェバイト")
-            .skills("英検2級").interests("大手企業")
-            .references("https://imageC.png").build()).block();
-  }
-
-  @AfterEach
-  void tearDown() {
-    resumeRepository.deleteAll().block();
-  }
+  @Autowired
+  ApplicantRepository applicantRepository;
 
   @Nested
   class findAll {
@@ -62,20 +39,28 @@ class ResumeRepositoryTest {
         // then
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getReferences)
-                .containsExactly("3", "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
-                    "https://imageC.png"))
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
+                .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abe"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abe"), "2021年 A大学卒業",
+                    "居酒屋バイトリーダー", "英検1級", "外資企業", "https://imageA.png", "3.png"))
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getReferences)
-                .containsExactly("2", "2020年 B大学卒業", "コンビニバイト", "TOEIC 900点",
-                    "ベンチャー企業", "https://imageB.png"))
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
+                .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abd"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abd"), "2020年 B大学卒業",
+                    "コンビニバイト", "TOEIC 900点", "ベンチャー企業", "https://imageB.png",
+                    "2.png"))
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getReferences)
-                .containsExactly("1", "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
+                .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業", "https://imageC.png",
+                    "1.png"))
             .verifyComplete();
       }
     }
@@ -91,17 +76,19 @@ class ResumeRepositoryTest {
       @Test
       @DisplayName("IDで検索できること")
       void findById() {
-        // given
-        String id = resumeRepository.findByApplicantId("1").blockFirst().getId();
         // when
-        Mono<Resume> actual = resumeRepository.findById(id);
+        Mono<Resume> actual = resumeRepository.findByUuid(
+            UUID.fromString("12345678-1234-5678-1234-123456789abc"));
         // then
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getReferences)
-                .containsExactly("1", "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
+                .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                    "https://imageC.png", "1.png"))
             .verifyComplete();
       }
     }
@@ -118,20 +105,54 @@ class ResumeRepositoryTest {
       @DisplayName("applicantIdで検索できること")
       void findByApplicantId() {
         // when
-        Flux<Resume> actual = resumeRepository.findByApplicantId("1");
+        Flux<Resume> actual = resumeRepository.findByApplicantUuid(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual)
             .assertNext(resume -> assertThat(resume)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getReferences)
-                .containsExactly("1", "2021年 A大学卒業", "居酒屋バイトリーダー", "英検1級",
-                    "外資企業", "https://imageA.png"))
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
+                .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                    "https://imageC.png", "1.png"))
             .verifyComplete();
       }
     }
   }
 
   @Nested
+  class FindByMintStatusId {
+
+    @Nested
+    @DisplayName("正常系")
+    class regular {
+
+      @Test
+      @DisplayName("mintStatusIdで検索できること")
+      void findByMintStatusId() {
+        // when
+        Flux<Resume> actual = resumeRepository.findByMintStatusId(0);
+        // then
+        StepVerifier.create(actual)
+            .assertNext(resume -> assertThat(resume)
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture, Resume::getMintStatusId)
+                .containsExactly(UUID.fromString("12345678-1234-5678-1234-123456789abc"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abc"),
+                    "2019年 C大学卒業", "カフェバイト", "英検2級", "大手企業",
+                    "https://imageC.png", "1.png", 0))
+            .verifyComplete();
+      }
+    }
+  }
+
+  @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class save {
 
     @Nested
@@ -142,24 +163,31 @@ class ResumeRepositoryTest {
       @DisplayName("保存できること")
       void save() {
         // given
-        Resume resume = Resume.builder().applicantId("4").education("2018年 D大学卒業")
-            .experience("飲食店バイト").skills("英検3級").interests("中小企業")
-            .references("https://imageD.png").build();
+        Resume resume = Resume.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abf"))
+            .applicantUuid(UUID.fromString("12345678-1234-1234-1234-123456789abd"))
+            .education("2018年 D大学卒業").experience("飲食店バイト").skills("英検3級")
+            .interests("中小企業").urls("https://imageD.png").picture("4.png").build();
         // when
         Mono<Resume> actual = resumeRepository.save(resume);
         // then
         StepVerifier.create(actual)
             .assertNext(actualResume -> assertThat(actualResume)
-                .extracting(Resume::getApplicantId, Resume::getEducation, Resume::getExperience,
-                    Resume::getSkills, Resume::getInterests, Resume::getReferences)
-                .containsExactly("4", "2018年 D大学卒業", "飲食店バイト", "英検3級", "中小企業",
-                    "https://imageD.png"))
+                .extracting(Resume::getUuid, Resume::getApplicantUuid, Resume::getEducation,
+                    Resume::getExperience, Resume::getSkills, Resume::getInterests, Resume::getUrls,
+                    Resume::getPicture)
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abf"),
+                    UUID.fromString("12345678-1234-1234-1234-123456789abd"), "2018年 D大学卒業",
+                    "飲食店バイト", "英検3級", "中小企業", "https://imageD.png", "4.png"))
             .verifyComplete();
       }
     }
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class deleteById {
 
     @Nested
@@ -169,10 +197,9 @@ class ResumeRepositoryTest {
       @Test
       @DisplayName("IDで削除できること")
       void deleteById() {
-        // given
-        String id = resumeRepository.findByApplicantId("1").blockFirst().getId();
         // when
-        Mono<Void> actual = resumeRepository.deleteById(id);
+        Mono<Void> actual = resumeRepository.deleteByUuid(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual).verifyComplete();
       }

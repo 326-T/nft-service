@@ -1,35 +1,40 @@
 package org.example.persistence.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Document
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table("applicants")
 public class Applicant {
 
   @Id
-  private String id;
+  private Long id;
+  private UUID uuid;
+  @Column("first_name")
   private String firstName;
+  @Column("last_name")
   private String lastName;
   private String email;
   private String phone;
   private String address;
+  @Column("password_digest")
   private String passwordDigest;
-  @CreatedDate
+  @Column("created_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime createdAt;
-  @LastModifiedDate
+  @Column("updated_at")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime updatedAt;
-  @Version
   private Long version;
 }

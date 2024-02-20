@@ -38,5 +38,5 @@ build/
 ### Mac OS ###
 .DS_Store
 
-### MongoDB ###
-.docker/mongodbdata/
+### jenv ###
+.java-version

@@ -1,30 +1,30 @@
 package org.example.persistence.repository;
 
-import com.mongodb.lang.Nullable;
+import java.util.UUID;
 import lombok.NonNull;
 import org.example.persistence.entity.Resume;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.repository.Query;
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface ResumeRepository extends ReactiveMongoRepository<Resume, String> {
-
-  @Query("{}")
-  @NonNull
-  Flux<Resume> findAll(@Nullable Sort sort);
+public interface ResumeRepository extends ReactiveCrudRepository<Resume, String> {
 
   @NonNull
-  Mono<Resume> findById(@NonNull String id);
+  Flux<Resume> findAll(Sort sort);
 
-  Flux<Resume> findByApplicantId(String applicantId);
+  @NonNull
+  Mono<Resume> findByUuid(UUID uuid);
+
+  Flux<Resume> findByMintStatusId(Integer mintStatusId);
+
+  Flux<Resume> findByApplicantUuid(UUID applicantUuid);
 
   @NonNull
   Mono<Resume> save(@NonNull Resume resume);
 
   @NonNull
-  Mono<Void> deleteById(@NonNull String id);
+  Mono<Void> deleteByUuid(@NonNull UUID id);
 }

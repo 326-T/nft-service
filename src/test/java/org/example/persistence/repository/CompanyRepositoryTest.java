@@ -2,47 +2,25 @@ package org.example.persistence.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.example.config.MongoAuditingConfiguration;
+import java.util.UUID;
+import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Company;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestExecutionListeners;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@DataMongoTest
-@Import(MongoAuditingConfiguration.class)
-@DirtiesContext
+@DataR2dbcTest
 class CompanyRepositoryTest {
 
   @Autowired
   CompanyRepository companyRepository;
-
-  @BeforeEach
-  void setUp() {
-    companyRepository.save(
-        Company.builder().name("A株式会社").email("xxx@example.org")
-            .phone("090-1234-5678").address("東京都渋谷区").passwordDigest("").build()).block();
-    companyRepository.save(
-        Company.builder().name("B株式会社").email("yyy@example.org")
-            .phone("090-9876-5432").address("東京都新宿区").passwordDigest("").build()).block();
-    companyRepository.save(
-        Company.builder().name("C株式会社").email("zzz@example.org")
-            .phone("090-1111-2222").address("東京都千代田区").passwordDigest("").build()).block();
-  }
-
-  @AfterEach
-  void tearDown() {
-    companyRepository.deleteAll().block();
-  }
 
   @Nested
   class findAll {
@@ -73,7 +51,8 @@ class CompanyRepositoryTest {
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
                 .containsExactly("A株式会社", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
-                    ""));
+                    ""))
+            .expectComplete();
       }
     }
   }
@@ -88,16 +67,16 @@ class CompanyRepositoryTest {
       @Test
       @DisplayName("IDで検索できること")
       void findById() {
-        // given
-        String id = companyRepository.findByEmail("xxx@example.org").block().getId();
         // when
-        Mono<Company> actual = companyRepository.findById(id);
+        Mono<Company> actual = companyRepository.findByUuid(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual)
             .assertNext(company -> assertThat(company)
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
-                .containsExactly("A株式会社", "xxx@example.org"));
+                .containsExactly("A株式会社", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
@@ -119,12 +98,16 @@ class CompanyRepositoryTest {
             .assertNext(company -> assertThat(company)
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
-                .containsExactly("A株式会社", "xxx@example.org"));
+                .containsExactly("A株式会社", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class save {
 
     @Nested
@@ -146,12 +129,16 @@ class CompanyRepositoryTest {
                 .extracting(Company::getName, Company::getEmail,
                     Company::getPhone, Company::getAddress, Company::getPasswordDigest)
                 .containsExactly("D株式会社", "aaa@example.org", "090-3333-4444", "東京都港区",
-                    ""));
+                    ""))
+            .expectComplete();
       }
     }
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class deleteById {
 
     @Nested
@@ -162,9 +149,9 @@ class CompanyRepositoryTest {
       @DisplayName("IDで削除できること")
       void deleteById() {
         // given
-        String id = companyRepository.findByEmail("xxx@example.org").block().getId();
+        UUID id = companyRepository.findByEmail("xxx@example.org").block().getUuid();
         // when
-        Mono<Void> actual = companyRepository.deleteById(id);
+        Mono<Void> actual = companyRepository.deleteByUuid(id);
         // then
         StepVerifier.create(actual).verifyComplete();
       }

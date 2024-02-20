@@ -2,47 +2,25 @@ package org.example.persistence.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.example.config.MongoAuditingConfiguration;
+import java.util.UUID;
+import org.example.listener.FlywayTestExecutionListener;
 import org.example.persistence.entity.Applicant;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestExecutionListeners;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@DataMongoTest
-@Import(MongoAuditingConfiguration.class)
-@DirtiesContext
+@DataR2dbcTest
 class ApplicantRepositoryTest {
 
   @Autowired
   ApplicantRepository applicantRepository;
-
-  @BeforeEach
-  void setUp() {
-    applicantRepository.save(
-        Applicant.builder().firstName("太郎").lastName("山田").email("xxx@example.org")
-            .phone("090-1234-5678").address("東京都渋谷区").passwordDigest("").build()).block();
-    applicantRepository.save(
-        Applicant.builder().firstName("次郎").lastName("鈴木").email("yyy@example.org")
-            .phone("090-9876-5432").address("東京都新宿区").passwordDigest("").build()).block();
-    applicantRepository.save(
-        Applicant.builder().firstName("三郎").lastName("佐藤").email("zzz@example.org")
-            .phone("090-1111-2222").address("東京都千代田区").passwordDigest("").build()).block();
-  }
-
-  @AfterEach
-  void tearDown() {
-    applicantRepository.deleteAll().block();
-  }
 
   @Nested
   class findAll {
@@ -60,20 +38,25 @@ class ApplicantRepositoryTest {
         // then
         StepVerifier.create(actual)
             .assertNext(applicant -> assertThat(applicant)
-                .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
+                .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                    Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("三郎", "佐藤", "zzz@example.org", "090-1111-2222",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "三郎",
+                    "佐藤", "zzz@example.org", "090-1111-2222",
                     "東京都千代田区", ""))
             .assertNext(applicant -> assertThat(applicant)
                 .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("次郎", "鈴木", "yyy@example.org", "090-9876-5432", "東京都新宿区",
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abd"), "次郎",
+                    "鈴木", "yyy@example.org", "090-9876-5432", "東京都新宿区",
                     ""))
             .assertNext(applicant -> assertThat(applicant)
                 .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("太郎", "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
-                    ""));
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "太郎",
+                    "山田", "xxx@example.org", "090-1234-5678", "東京都渋谷区",
+                    ""))
+            .expectComplete();
       }
     }
   }
@@ -88,16 +71,18 @@ class ApplicantRepositoryTest {
       @Test
       @DisplayName("IDで検索できること")
       void findById() {
-        // given
-        String id = applicantRepository.findByEmail("xxx@example.org").block().getId();
         // when
-        Mono<Applicant> actual = applicantRepository.findById(id);
+        Mono<Applicant> actual = applicantRepository.findByUuid(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual)
             .assertNext(applicant -> assertThat(applicant)
-                .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
-                    Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("太郎", "山田", "xxx@example.org"));
+                .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                    Applicant::getEmail, Applicant::getPhone, Applicant::getAddress,
+                    Applicant::getPasswordDigest)
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
+                    "山田", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
@@ -117,14 +102,20 @@ class ApplicantRepositoryTest {
         // then
         StepVerifier.create(actual)
             .assertNext(applicant -> assertThat(applicant)
-                .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
+                .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                    Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("太郎", "山田", "xxx@example.org"));
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abc"), "太郎",
+                    "山田", "xxx@example.org"))
+            .expectComplete();
       }
     }
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class save {
 
     @Nested
@@ -135,7 +126,9 @@ class ApplicantRepositoryTest {
       @DisplayName("保存できること")
       void save() {
         // given
-        Applicant applicant = Applicant.builder().firstName("四郎").lastName("田中")
+        Applicant applicant = Applicant.builder()
+            .uuid(UUID.fromString("12345678-1234-1234-1234-123456789abe")).firstName("四郎")
+            .lastName("田中")
             .email("aaa@example.org").phone("090-3333-4444").address("東京都港区")
             .passwordDigest("").build();
         // when
@@ -143,15 +136,21 @@ class ApplicantRepositoryTest {
         // then
         StepVerifier.create(actual)
             .assertNext(a -> assertThat(a)
-                .extracting(Applicant::getFirstName, Applicant::getLastName, Applicant::getEmail,
+                .extracting(Applicant::getUuid, Applicant::getFirstName, Applicant::getLastName,
+                    Applicant::getEmail,
                     Applicant::getPhone, Applicant::getAddress, Applicant::getPasswordDigest)
-                .containsExactly("四郎", "田中", "aaa@example.org", "090-3333-4444", "東京都港区",
-                    ""));
+                .containsExactly(UUID.fromString("12345678-1234-1234-1234-123456789abe"), "四郎",
+                    "田中", "aaa@example.org", "090-3333-4444", "東京都港区",
+                    ""))
+            .expectComplete();
       }
     }
   }
 
   @Nested
+  @TestExecutionListeners(
+      listeners = {FlywayTestExecutionListener.class},
+      mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
   class deleteById {
 
     @Nested
@@ -161,10 +160,9 @@ class ApplicantRepositoryTest {
       @Test
       @DisplayName("IDで削除できること")
       void deleteById() {
-        // given
-        String id = applicantRepository.findByEmail("xxx@example.org").block().getId();
         // when
-        Mono<Void> actual = applicantRepository.deleteById(id);
+        Mono<Void> actual = applicantRepository.deleteByUuid(
+            UUID.fromString("12345678-1234-1234-1234-123456789abc"));
         // then
         StepVerifier.create(actual).verifyComplete();
       }

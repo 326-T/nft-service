@@ -7,22 +7,18 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Date;
 import java.util.UUID;
+import org.example.config.JwtConfig;
 import org.example.persistence.entity.Applicant;
 import org.example.persistence.entity.Company;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
-  private final String secretKey;
-  private final Long ttl;
+  private final JwtConfig jwtConfig;
 
-  public JwtService(
-      @Value("${jwt.secret-key}") String secretKey,
-      @Value("${jwt.ttl}") Long ttl) {
-    this.secretKey = secretKey;
-    this.ttl = ttl;
+  public JwtService(JwtConfig jwtConfig) {
+    this.jwtConfig = jwtConfig;
   }
 
   public String encodeApplicant(Applicant applicant) {
@@ -31,7 +27,7 @@ public class JwtService {
         .withJWTId(UUID.randomUUID().toString())
         .withIssuer("org.example")
         .withAudience("org.example")
-        .withSubject(applicant.getId())
+        .withSubject(applicant.getUuid().toString())
         .withClaim("firstName", applicant.getFirstName())
         .withClaim("lastName", applicant.getLastName())
         .withClaim("email", applicant.getEmail())
@@ -39,8 +35,8 @@ public class JwtService {
         .withClaim("address", applicant.getAddress())
         .withIssuedAt(now)
         .withNotBefore(now)
-        .withExpiresAt(new Date(now.getTime() + ttl))
-        .sign(Algorithm.HMAC256(secretKey));
+        .withExpiresAt(new Date(now.getTime() + jwtConfig.getTtl()))
+        .sign(Algorithm.HMAC256(jwtConfig.getSecretKey()));
   }
 
   public String encodeCompany(Company company) {
@@ -49,22 +45,23 @@ public class JwtService {
         .withJWTId(UUID.randomUUID().toString())
         .withIssuer("org.example")
         .withAudience("org.example")
-        .withSubject(company.getId())
+        .withSubject(company.getUuid().toString())
         .withClaim("name", company.getName())
         .withClaim("email", company.getEmail())
         .withClaim("phone", company.getPhone())
         .withClaim("address", company.getAddress())
         .withIssuedAt(now)
         .withNotBefore(now)
-        .withExpiresAt(new Date(now.getTime() + ttl))
-        .sign(Algorithm.HMAC256(secretKey));
+        .withExpiresAt(new Date(now.getTime() + jwtConfig.getTtl()))
+        .sign(Algorithm.HMAC256(jwtConfig.getSecretKey()));
   }
 
   public Applicant decodeApplicant(String jwt)
       throws TokenExpiredException, SignatureVerificationException, IllegalArgumentException {
-    DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey)).build().verify(jwt);
+    DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(jwtConfig.getSecretKey())).build()
+        .verify(jwt);
     return Applicant.builder()
-        .id(decodedJWT.getSubject())
+        .uuid(UUID.fromString(decodedJWT.getSubject()))
         .firstName(decodedJWT.getClaim("firstName").asString())
         .lastName(decodedJWT.getClaim("lastName").asString())
         .email(decodedJWT.getClaim("email").asString())
@@ -75,9 +72,10 @@ public class JwtService {
 
   public Company decodeCompany(String jwt)
       throws TokenExpiredException, SignatureVerificationException, IllegalArgumentException {
-    DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey)).build().verify(jwt);
+    DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(jwtConfig.getSecretKey())).build()
+        .verify(jwt);
     return Company.builder()
-        .id(decodedJWT.getSubject())
+        .uuid(UUID.fromString(decodedJWT.getSubject()))
         .name(decodedJWT.getClaim("name").asString())
         .email(decodedJWT.getClaim("email").asString())
         .phone(decodedJWT.getClaim("phone").asString())
